@@ -1,0 +1,5 @@
+HOWTO
+gdalwarp -s_srs "EPSG:4326" -t_srs "EPSG:3857" -r "lanczos" world.tif world_3857.tif
+
+gdal2tiles.py -t "tiles" -z 1-7 world_3857.tif tiles3857/
+gdal2tiles.py -t "tiles" -z 1-10 -a 0 europe4326.tif tiles4326europe/

@@ -1,0 +1,28 @@
+{
+  "map":{
+    "proj":"local",
+    "center":[1000, 1000],
+    "zoom":9,
+    "baseResolution":156543.03391,
+    "resolutionsLevels":21
+  },
+  "layers":[
+    {
+      "type":"localimage",
+      "specs":{
+        "path":"./data/raster/local/test.jpg",
+        "size":[16200,8100]
+      },
+      "config":{
+        "name":"local foto",
+        "baselayer":false,
+        "visible":true,
+        "alpha":0,
+        "reload":0,
+        "tags":["local","foto"]
+        }
+    }
+  ],
+  "theme":{
+  }
+}

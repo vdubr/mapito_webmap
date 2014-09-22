@@ -1,0 +1,16 @@
+{"markers":[
+  {
+    "x":1551780,
+    "y": 6279640,
+    "properties":{
+      "info":"First marker"
+    }
+    },{
+      "x":1551780,
+      "y": 6276640,
+      "properties":{
+        "info":"Second marker"
+      }
+    }
+  ]
+}

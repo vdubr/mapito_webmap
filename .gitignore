@@ -1,0 +1,12 @@
+.*sw*
+*.pyc
+*.*~
+
+build
+
+#google closure
+build/
+
+bower_components
+
+node_modules

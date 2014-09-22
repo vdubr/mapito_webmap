@@ -1,0 +1,57 @@
+{
+  "map":{
+    "proj":"EPSG:4326",
+    "center":[16.619144757227474, 49.91652516085529],
+    "resolutions":[],
+    "zoom":14
+  },
+  "layers":[
+    {
+      "type":"wms",
+      "specs":{
+        "url":"http://geoportal.cuzk.cz/WMS_ZM10_PUB/WMService.aspx",
+        "layers":"GR_ZM10",
+        "tiled":true
+      },
+      "config":{
+        "name":"Základní mapa 10",
+        "baselayer":false,
+        "visible":true,
+        "alpha":0,
+        "reload":0,
+        "tags":["ZM10,podkladovka"]
+        }
+    },
+    {
+      "type":"wms",
+      "specs":{
+        "url":"http://services.cuzk.cz/wms/wms.asp",
+        "layers":"dalsi_p_mapy,hranice_parcel,obrazy_parcel,parcelni_cisla,omp,RST_KMD,RST_KN",
+        "tiled":true
+      },
+      "config":{
+        "name":"Katastrální mapa ",
+        "baselayer":false,
+        "visible":true,
+        "alpha":0,
+        "reload":0,
+        "tags":["KN"]
+        }
+    },{
+      "type":"geojson",
+      "specs":{
+        "path":"http://mosty.mostar.cz/cron/geojson/07129.json",
+        "style":"stylefunction",
+        "projection":"EPSG:4326"
+      },
+      "config":{
+        "name":"Mosty",
+        "baselayer":false,
+        "visible":true,
+        "tags":["Vector","aaa"]
+        }
+    }
+  ],
+  "theme":{
+  }
+}

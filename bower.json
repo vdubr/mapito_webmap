@@ -1,0 +1,15 @@
+{
+  "name": "Mapito - OL3 wrapper",
+  "version": "0.0.1",
+  "authors": [
+    "Vojtech Dubrovsky <vdubr@icloud.com>"
+  ],
+  "keywords": [
+    "GIS",
+    "map",
+    "OpenLayers",
+    "Closure",
+    "React"
+  ],
+  "license": "MIT"
+}
