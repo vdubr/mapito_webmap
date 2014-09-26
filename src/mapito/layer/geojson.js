@@ -62,7 +62,6 @@ mapito.layer.geojson.getGEOJSONLayer = function(GEOJSONOptions) {
     projection: ol.proj.get(projection)
   });
 
-
   var layer = new ol.layer.Vector({
     source: source
   });
@@ -75,6 +74,7 @@ mapito.layer.geojson.getGEOJSONLayer = function(GEOJSONOptions) {
         //  feature.setStyle(style);
       }
     });
+
     source.addFeatures(features);
   });
 

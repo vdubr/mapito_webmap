@@ -2,14 +2,15 @@ goog.provide('mapito.App');
 goog.provide('mapito.App.Events');
 goog.provide('mapito.app.Options');
 
-
-goog.require('Proj4js.Proj');
 goog.require('goog.Promise');
 goog.require('goog.net.XhrIo');
 goog.require('mapito.DefaultOptions');
+goog.require('mapito.Uri');
 goog.require('mapito.layer');
 goog.require('mapito.style');
 goog.require('mapito.style.StyleOptions');
+goog.require('mapito.transform');
+goog.require('mapito.uri.uriOptions');
 goog.require('ol.Map');
 goog.require('ol.Object');
 goog.require('ol.Overlay');
@@ -38,6 +39,8 @@ mapito.App = function() {
 
   this.listenersKey_ = [];
 
+  this.uriParser_ = new mapito.Uri();
+
   //var defaultOptions = mapito.DefaultOptions;
 
   goog.base(this);
@@ -65,6 +68,20 @@ mapito.App.prototype.listenersKey_ = null;
  * @private
  */
 mapito.App.prototype.target_ = null;
+
+
+/**
+ * @type {boolean}
+ * @private
+ */
+mapito.App.prototype.trackUri_ = true;
+
+
+/**
+ * @type {?mapito.Uri}
+ * @private
+ */
+mapito.App.prototype.uriParser_ = null;
 
 
 /**
@@ -134,11 +151,28 @@ mapito.App.prototype.setProjectOptions_ = function(projectOptions) {
  */
 mapito.App.prototype.init = function() {
   if (goog.isDefAndNotNull(this.target_)) {
+    //TODO check react and templates -> if the are not defined use simple
+    //     good for use vithout react
     React.renderComponent(templates.project(), this.target_);
   }
 
-  this.setProject_(this.projectOptions_);
+  this.startProject_(this.projectOptions_);
 
+};
+
+
+/**
+ * Prepare start app without configuration
+ * @param {mapito.app.ProjectOptions} projectOptions
+ * @private
+ */
+mapito.App.prototype.startProject_ = function(projectOptions) {
+  var uriSettings = this.uriParser_.getSettings();
+  if (goog.isDefAndNotNull(uriSettings)) {
+    this.setProjectFromUri_(uriSettings, projectOptions);
+  }else {
+    this.setProject_(projectOptions);
+  }
 };
 
 
@@ -147,10 +181,38 @@ mapito.App.prototype.init = function() {
  * @private
  */
 mapito.App.prototype.setProject_ = function(projectOptions) {
-
-  this.setMap_(projectOptions['map']);
+  var projection = this.getProjection_(projectOptions['projection']);
+  this.setMap_(projectOptions['map'], projection);
   this.setLayers_(projectOptions['layers']);
   this.setStyles_(projectOptions['styles']);
+};
+
+
+/**
+ * @param {mapito.app.uriOptions} uriOptions
+ * @param {mapito.app.ProjectOptions} projectOptions
+ * @private
+ */
+mapito.App.prototype.setProjectFromUri_ = function(uriOptions, projectOptions) {
+
+  this.setProject_(projectOptions);
+
+  var view = this.map_.getView();
+
+  //set center and zoom
+  if (uriOptions.x && uriOptions.y) {
+    var appProj = this.map_.getView().getProjection();
+    var srcCoords = [uriOptions.x, uriOptions.y];
+    var coords = mapito.transform.coordsWgsTo(srcCoords, appProj);
+
+    if (goog.isDefAndNotNull(coords)) {
+      view.setCenter(coords);
+    }
+
+    if (uriOptions.z) {
+      view.setZoom(uriOptions.z);
+    }
+  }
 };
 
 
@@ -167,16 +229,41 @@ mapito.App.prototype.setStyles_ = function(styleOptions) {
 
 
 /**
- * @param {mapito.app.MapOptions} mapOptions
+ * @param {mapito.app.ProjOptions|mapito.app.KnownProjections} projOptions
+ * @return {ol.proj.Projection|undefined}
  * @private
  */
-mapito.App.prototype.setMap_ = function(mapOptions) {
+mapito.App.prototype.getProjection_ = function(projOptions) {
+  var projection;
+
+  if (goog.isString(projOptions)) {
+    projection = ol.proj.get(projOptions);
+  }else if (goog.isObject(projOptions) &&
+      goog.isDefAndNotNull(projOptions['code']) &&
+      goog.isDefAndNotNull(projOptions['def']) &&
+      goog.isDefAndNotNull(projOptions['extent'])) {
+    proj4.defs(projOptions['code'], projOptions['def']);
+    projection = ol.proj.get(projOptions['code']);
+    window['console']['log'](projection);
+    projection.setExtent(projOptions['extent']);
+    window['console']['log'](projection);
+  }
+  return projection;
+};
+
+
+/**
+ * @param {mapito.app.MapOptions} mapOptions
+ * @param {ol.proj.Projection|undefined} projection
+ * @private
+ */
+mapito.App.prototype.setMap_ = function(mapOptions, projection) {
   var mapTarget = this.target_.querySelector('.mapito-mapview');
 
   // var resolutions = this.getResolutions_(
   //     mapOptions['baseResolution'], mapOptions['resolutionsLevels']);
 
-  var projection = this.getProjection_(mapOptions['proj']);
+  //var projection = this.getProjection_(mapOptions['proj']);
 
   var map_options = {
     target: mapTarget,
@@ -191,6 +278,23 @@ mapito.App.prototype.setMap_ = function(mapOptions) {
   };
 
   this.map_ = new ol.Map(map_options);
+
+  if (this.trackUri_) {
+    this.setUriTracking_();
+  }
+};
+
+
+/**
+ * @private
+ */
+mapito.App.prototype.setUriTracking_ = function() {
+  var parser = this.uriParser_;
+  var view = this.map_.getView();
+  this.map_.on('moveend', function(evt) {
+    parser.propagateViewChange(view);
+  });
+
 };
 
 
@@ -199,7 +303,7 @@ mapito.App.prototype.setMap_ = function(mapOptions) {
  * @return {ol.proj.Projection}
  * @private
  */
-mapito.App.prototype.getProjection_ = function(projStr) {
+mapito.App.prototype.getProjectionGGG_ = function(projStr) {
   var proj;
   switch (projStr) {
     case 'local':

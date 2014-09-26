@@ -1,7 +1,11 @@
 {
+  "projection": {
+      "code" : "EPSG:5514",
+      "def" : "+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs",
+      "extent" : [-951313.86, -1275181.81,-159398.12, -984126.34]
+      },
   "map":{
-    "proj":"EPSG:3857",
-    "center":[1584693.686678698, 6263209.25996398],
+    "center":[-763194.76,	-1166403.61],
     "zoom":9,
     "baseResolution":156543.03391,
     "resolutionsLevels":21
@@ -13,47 +17,15 @@
         "url":"http://geoportal.cuzk.cz/WMS_ZM10_PUB/WMService.aspx",
         "layers":"GR_ZM10",
         "tiled":true,
-        "projection":"EPSG:3857"
+        "projection":"EPSG:5514"
       },
       "config":{
         "name":"Základní mapa 10",
         "baselayer":false,
-        "visible":false,
-        "alpha":0,
-        "reload":0,
-        "tags":["ZM10,podkladovka"]
-        }
-    },
-    {
-      "type":"geotif",
-      "specs":{
-        "url":"./data/raster/europe3857p.png",
-        "projection":"EPSG:3857",
-        "extent":[1260831.7323235017247498,6050746.8536062203347683,2217739.8699171207845211,6837718.9279976952821016],
-        "imageSize":[1565,1287]
-      },
-      "config":{
-        "name":"Local tiled cr",
-        "baselayer":false,
-        "visible":false,
-        "alpha":0,
-        "reload":0,
-        "tags":["tiled"]
-        }
-    },
-    {
-      "type":"tiled",
-      "specs":{
-        "url":"./data/raster/tiles3857/",
-        "projection":"EPSG:3857"
-      },
-      "config":{
-        "name":"Local tiled cr",
-        "baselayer":false,
         "visible":true,
         "alpha":0,
         "reload":0,
-        "tags":["tiled"]
+        "tags":["ZM10,podkladovka"]
         }
     },
     {
@@ -89,13 +61,13 @@
         "styleId":2,
         "path":"./data/vector/3857/point.geojson",
         "style":"stylefunction",
-        "projection":"EPSG:3857"
+        "projection":"EPSG:5514"
       },
       "config":{
-        "name":"First vector",
+        "name":"Trees",
         "baselayer":false,
         "visible":true,
-        "tags":["Vector","aaa"]
+        "tags":["Trees","Vector","aaa"]
         }
     },{
       "type":"markers",

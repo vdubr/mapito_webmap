@@ -353,7 +353,6 @@ def compile_lib_deps(trgt):
                 '%(BUILDER)s',
                 '--compiler_jar=%(CLOSURE_JAR)s',
                 '--root=bower_components/closure-library/closure/goog',
-                '--root=bower_components/closure-templates/',
                 '--root=bower_components/closure-library/' +
                 'third_party/closure/goog',
                 '--root=bower_components/openlayers3/src/ol',
@@ -531,6 +530,7 @@ def compile_example_javascripts(trgt):
     """
     trgt.rm_rf('build/examples')
     trgt.makedirs('build/examples')
+    trgt.makedirs('build/examples/js')
     trgt.makedirs('build/examples/fonts')
 
     # copy fontawesome fonts
@@ -553,18 +553,16 @@ def compile_example_javascripts(trgt):
             shutil.copy(os.path.join(root, filen),
                         os.path.join('build', 'examples', 'fonts'))
 
-    # copy unip icons
-    trgt.cp_r(os.path.join('examples', 'stable', 'unipicons'),
-              os.path.join('build', 'examples', 'unipicons'))
+    # copy react lib
+    shutil.copy(os.path.join('bower_components', 'react', 'build','react.min.js'),
+              os.path.join('examples', 'stable','js'))
 
-    # copy style icons
-    trgt.cp_r('img', os.path.join('build', 'examples', 'img'))
+    shutil.copy(os.path.join('bower_components', 'react', 'build','react.min.js'),
+              os.path.join('build', 'examples','js'))
 
     # copy input static data
     trgt.cp_r(os.path.join('examples', 'stable', 'data'),
                os.path.join('build', 'examples', 'data'))
-    trgt.cp_r(os.path.join('examples', 'stable', 'lang'),
-              os.path.join('build', 'examples', 'lang'))
 
     # minify css by gulp
     trgt.run('%(GULP)s', 'minify-css')
