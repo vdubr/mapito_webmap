@@ -560,6 +560,15 @@ def compile_example_javascripts(trgt):
     shutil.copy(os.path.join('bower_components', 'react', 'build','react.min.js'),
               os.path.join('build', 'examples','js'))
 
+
+    # copy proj4js lib
+    shutil.copy(os.path.join('bower_components', 'proj4js', 'dist','proj4.js'),
+              os.path.join('examples', 'stable','js'))
+
+    shutil.copy(os.path.join('bower_components', 'proj4js', 'dist','proj4.js'),
+              os.path.join('build', 'examples','js'))
+
+
     # copy input static data
     trgt.cp_r(os.path.join('examples', 'stable', 'data'),
                os.path.join('build', 'examples', 'data'))

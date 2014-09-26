@@ -1,6 +1,6 @@
 {
+  "projection":"EPSG:3857",
   "map":{
-    "proj":"EPSG:3857",
     "center":[1653485.80,6293519.16],
     "zoom":13,
     "baseResolution":156543.03391,
