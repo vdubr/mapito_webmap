@@ -3,6 +3,7 @@ goog.provide('mapito.Uri.Events');
 goog.provide('mapito.uri.uriOptions');
 
 goog.require('goog.Uri');
+goog.require('mapito.app.ProjectOptions');
 goog.require('mapito.transform');
 goog.require('ol.Object');
 
@@ -10,7 +11,8 @@ goog.require('ol.Object');
 /**
  * @typedef {{x:{number|undefined},
  *            y:{number|undefined},
- *            z:{number|undefined}
+ *            z:{number|undefined},
+ *            config:{string|mapito.app.ProjectOptions|undefined}
  *           }}
  */
 mapito.uri.uriOptions;
@@ -18,7 +20,7 @@ mapito.uri.uriOptions;
 
 
 /**
- * mapito_3857.html#?mode=RAW&x=13&y=54&z=4
+ * mode=RAW&x=14.83635&y=49.11928&z=13&config=data/mapito/4326.json
  * @class
  * @constructor
  * @extends {ol.Object}
@@ -47,6 +49,9 @@ mapito.Uri.prototype.getSettings = function() {
   var queryKeys = queryData.getKeys();
   var queryValues = queryData.getValues();
 
+  //todo separate
+  //check config
+
   if (goog.array.contains(queryKeys, 'x') &&
       goog.array.contains(queryKeys, 'y')) {
     var strX = queryValues[queryKeys.indexOf('x')];
@@ -69,6 +74,19 @@ mapito.Uri.prototype.getSettings = function() {
       }
     }
   }
+
+  //todo separate
+  //check config
+  if (goog.array.contains(queryKeys, 'config')) {
+    var config = queryValues[queryKeys.indexOf('config')];
+
+    //todo decode and parse json
+    //if url, try to download and validate
+    if (goog.isString(config)) {
+      goog.object.extend(settings, {'config': config});
+    }
+  }
+
 
   return settings;
 };

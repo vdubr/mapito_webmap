@@ -195,24 +195,62 @@ mapito.App.prototype.setProject_ = function(projectOptions) {
  */
 mapito.App.prototype.setProjectFromUri_ = function(uriOptions, projectOptions) {
 
-  this.setProject_(projectOptions);
+//TODO replace
+var scope = this
 
-  var view = this.map_.getView();
 
-  //set center and zoom
-  if (uriOptions.x && uriOptions.y) {
-    var appProj = this.map_.getView().getProjection();
-    var srcCoords = [uriOptions.x, uriOptions.y];
-    var coords = mapito.transform.coordsWgsTo(srcCoords, appProj);
+var setView = function() {
+    var view = scope.map_.getView();
 
-    if (goog.isDefAndNotNull(coords)) {
-      view.setCenter(coords);
+    //set center and zoom
+    if (uriOptions.x && uriOptions.y) {
+      var appProj = scope.map_.getView().getProjection();
+      var srcCoords = [uriOptions.x, uriOptions.y];
+      var coords = mapito.transform.coordsWgsTo(srcCoords, appProj);
+
+      if (goog.isDefAndNotNull(coords)) {
+        view.setCenter(coords);
+      }
+
+      if (uriOptions.z) {
+        view.setZoom(uriOptions.z);
+      }
+    }
+  };
+
+
+
+  this.getConfigFromUri_(uriOptions).then(
+      function(config){
+          scope.setProject_(config);
+          setView();
+      }, function(){
+        scope.setProject_(projectOptions);
+      }, this);
+
+};
+
+
+/**
+ * TODO add reject states
+ * @param {mapito.app.uriOptions} uriOptions
+ * @return {Promise}
+ * @private
+ */
+mapito.App.prototype.getConfigFromUri_ = function(uriOptions) {
+  var promise = new goog.Promise(function(resolve, reject) {
+    if (goog.object.containsKey(uriOptions, 'config')) {
+      this.getProjectOptions_(uriOptions.config).then(
+          function(config) {
+            resolve(config);
+          },null, this);
+    }else {
+      reject();
     }
 
-    if (uriOptions.z) {
-      view.setZoom(uriOptions.z);
-    }
-  }
+  },this);
+
+  return promise;
 };
 
 
