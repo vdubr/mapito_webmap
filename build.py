@@ -243,14 +243,6 @@ def build_apidoc(trgt):
              '-d', APIDOC)
     trgt.touch()
 
-
-@target('test_apidoc', SRC, TEST_SRC)
-def test_apidoc(trgt):
-    "!! Currently not used !!"
-    trgt.run('%(JSDOC)s', '-c', 'doc/conf.json',
-             'src', 'doc/index.md', '-T')
-
-
 @target('build/test_lib', SRC, TEST_SRC, COMPILED_SIMPLE)
 def test_lib(trgt):
     """ Running casperjs tests
@@ -267,59 +259,6 @@ def test_lib(trgt):
              'test',
              '--includes=' + includes,
              tests_src)
-
-
-@target('build/api_data', SRC, TEST_SRC, COMPILED)
-def test_api(trgt):
-    """ Update api data
-    """
-
-    trgt.rm_rf('examples/stable/data/gp2/')
-    includes = ','.join([os.path.join('build', 'lib', 'mapito.js'),
-                         os.path.join('bower_components',
-                                      'closure-library',
-                                      'closure',
-                                      'goog',
-                                      'base.js')])
-    api_version = sys.argv[2] if (len(sys.argv)>2) else "api"
-
-    trgt.run('%(CASPERJS)s',
-             'test',
-             '--web-security=no',
-             '--includes=' + includes,
-             'test/api/load.test.js',
-             '--gp-id=23',
-             '--gp-api='+api_version)
-    trgt.run('%(CASPERJS)s',
-             'test',
-             '--web-security=no',
-             '--includes=' + includes,
-             'test/api/load.test.js',
-             '--gp-id=11372',
-             '--gp-api='+api_version)
-
-@target('build/api_pretty_json', SRC, TEST_SRC, COMPILED)
-def test_api_json(trgt):
-    """ Pretty print json from api response
-    """
-
-    path = 'examples/stable/data/gp2/'
-    subdirs = [x[0] for x in os.walk(path)]
-    for subdir in subdirs:
-        files = os.walk(subdir).next()[2]
-        if (len(files) > 0):
-            for file in files:
-                filepath = subdir + "/" + file
-                jsonFileR = open(filepath, 'r')
-                parsed = json.load(jsonFileR)
-                prettyJSON = json.dumps(parsed, indent=2, sort_keys=False)
-                jsonFileR.close()
-
-                jsonFileW = open(filepath, 'w')
-                jsonFileW.truncate()
-                jsonFileW.write(prettyJSON)
-                jsonFileW.close()
-
 
 @target(COMPILED, SRC, 'build/templates/time_stamp', COMPILED_DEPS)
 def compile_lib_advanced(trgt):
@@ -687,8 +626,6 @@ virtual('build', 'gulp', 'updateBower', 'lib', 'buildexamples')
 virtual('buildexamples', 'build/examples/loader.js')
 virtual('server', 'serve')
 virtual('examples', 'buildexamples', 'serve')
-virtual('api', 'buildexamples', 'build/api_data',
-        'build/api_pretty_json')
 virtual('clean', 'cleanBuild', 'clean_bower')
 virtual('relib', 'cleanBuild', 'lib', 'buildexamples')
 virtual('jenkinsbuild', 'clean',
@@ -708,8 +645,6 @@ def print_help(trgt):
     all     - For everything: lib, doc, test,
     clean   - Delete build/ content
     server  - Example server
-    api     - copy REST API to local repository
-
     doc     - API documentation and User documentation
         apidoc  - API documentation
         userdoc - User documentation

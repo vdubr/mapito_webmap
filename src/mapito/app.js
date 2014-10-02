@@ -104,9 +104,13 @@ mapito.App.prototype.map_ = null;
 mapito.App.prototype.setOptions = function(options) {
   var baseOptions = options;
   this.target_ = document.querySelector('#' + baseOptions['target']) || null;
-  var getProjectOptions = this.getProjectOptions_(baseOptions['path']);
 
-  getProjectOptions.then(this.setProjectOptions_, null, this);
+  if (goog.isDefAndNotNull(baseOptions['path'])) {
+    var getProjectOptions = this.getProjectOptions_(baseOptions['path']);
+    getProjectOptions.then(this.setProjectOptions_, null, this);
+  }else {
+    this.setProjectOptions_(mapito.DefaultOptions);
+  }
 
 };
 
@@ -189,17 +193,17 @@ mapito.App.prototype.setProject_ = function(projectOptions) {
 
 
 /**
- * @param {mapito.app.uriOptions} uriOptions
+ * @param {mapito.uri.uriOptions} uriOptions
  * @param {mapito.app.ProjectOptions} projectOptions
  * @private
  */
 mapito.App.prototype.setProjectFromUri_ = function(uriOptions, projectOptions) {
 
-//TODO replace
-var scope = this
+  //TODO replace
+  var scope = this;
 
 
-var setView = function() {
+  var setView = function() {
     var view = scope.map_.getView();
 
     //set center and zoom
@@ -219,12 +223,11 @@ var setView = function() {
   };
 
 
-
   this.getConfigFromUri_(uriOptions).then(
-      function(config){
-          scope.setProject_(config);
-          setView();
-      }, function(){
+      function(config) {
+        scope.setProject_(config);
+        setView();
+      }, function() {
         scope.setProject_(projectOptions);
       }, this);
 
@@ -233,14 +236,15 @@ var setView = function() {
 
 /**
  * TODO add reject states
- * @param {mapito.app.uriOptions} uriOptions
+ * @param {mapito.uri.uriOptions} uriOptions
  * @return {Promise}
  * @private
  */
 mapito.App.prototype.getConfigFromUri_ = function(uriOptions) {
+
   var promise = new goog.Promise(function(resolve, reject) {
     if (goog.object.containsKey(uriOptions, 'config')) {
-      this.getProjectOptions_(uriOptions.config).then(
+      this.getProjectOptions_(uriOptions['config']).then(
           function(config) {
             resolve(config);
           },null, this);
@@ -261,7 +265,6 @@ mapito.App.prototype.getConfigFromUri_ = function(uriOptions) {
 mapito.App.prototype.setStyles_ = function(styleOptions) {
   if (goog.isDefAndNotNull(styleOptions)) {
     this.styles_ = styleOptions;
-    window['console']['log'](this.styles_);
   }
 };
 
@@ -282,9 +285,7 @@ mapito.App.prototype.getProjection_ = function(projOptions) {
       goog.isDefAndNotNull(projOptions['extent'])) {
     proj4.defs(projOptions['code'], projOptions['def']);
     projection = ol.proj.get(projOptions['code']);
-    window['console']['log'](projection);
     projection.setExtent(projOptions['extent']);
-    window['console']['log'](projection);
   }
   return projection;
 };

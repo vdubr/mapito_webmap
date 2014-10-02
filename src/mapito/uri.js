@@ -83,6 +83,9 @@ mapito.Uri.prototype.getSettings = function() {
     //todo decode and parse json
     //if url, try to download and validate
     if (goog.isString(config)) {
+      if (!goog.isObject(settings)) {
+        settings = {};
+      }
       goog.object.extend(settings, {'config': config});
     }
   }

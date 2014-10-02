@@ -57,16 +57,21 @@ mapito.Theme;
  * @type {mapito.app.ProjectOptions}
  */
 mapito.DefaultOptions = {
+  'projection': 'EPSG:3857',
   'map': {
-    'proj': 'EPSG:5514',
-    'center': [-766892.94667781, -1106903.2590722],
-    'zoom': 4,
+    'center': [1910872.8582313128, 6148369.483887095],
+    'zoom': 5,
     'baseResolution': 156543.03391,
     'resolutionsLevels': 21
   },
   'layers': [
     {
-      'type': 'osm'
+      'type': 'osm',
+      'config': {
+        'name': 'Open street maps',
+        'baselayer': true,
+        'visible': true
+      }
     }
   ],
   'theme': {
