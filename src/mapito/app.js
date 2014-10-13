@@ -3,6 +3,7 @@ goog.provide('mapito.App.Events');
 goog.provide('mapito.app.Options');
 
 goog.require('goog.Promise');
+goog.require('goog.dom');
 goog.require('goog.net.XhrIo');
 goog.require('mapito.DefaultOptions');
 goog.require('mapito.Uri');
@@ -157,7 +158,12 @@ mapito.App.prototype.init = function() {
   if (goog.isDefAndNotNull(this.target_)) {
     //TODO check react and templates -> if the are not defined use simple
     //     good for use vithout react
-    React.renderComponent(templates.project(), this.target_);
+    if (goog.isDefAndNotNull(window['React'])) {
+      React.renderComponent(templates.project(), this.target_);
+    }else {
+      goog.dom.appendChild(this.target_, templates.project);
+    }
+
   }
 
   this.startProject_(this.projectOptions_);

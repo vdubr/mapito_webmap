@@ -19,7 +19,7 @@ mapito.layer.MARKERSOptions;
 
 /**
  * @param {Object} marker
- * @return {ol.Feature>}
+ * @return {ol.Feature}
  * @private
  */
 mapito.layer.markers.readMarker_ = function(marker) {

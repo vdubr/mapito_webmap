@@ -1,1 +1,0 @@
-git.exe tag -l | xargs git tag -d

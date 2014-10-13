@@ -10,3 +10,5 @@ build/
 bower_components
 
 node_modules
+
+examples/stable/js

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 import os
 import sys
 import shutil
@@ -24,16 +25,16 @@ if sys.platform == 'win32':
     variables.GULP = 'gulp.cmd'
     variables.GRUNT = 'grunt.cmd'
     variables.JSDOC = 'jsdoc.cmd'
+    variables.BOWER = 'bower.cmd'
     variables.PYTHON = 'python.exe'
     variables.JAVA = 'java.exe'
-    variables.BOWER = 'bower.cmd'
     variables.GIT = 'git.exe'
     variables.GJSLINT = 'gjslint.exe'
     variables.CASPERJS = 'casperjs.exe'
 else:
+    variables.NPM = 'npm'
     variables.GULP = 'gulp'
     variables.GRUNT = 'grunt'
-    variables.NPM = 'npm'
     variables.JSDOC = 'jsdoc'
     variables.BOWER = 'bower'
     variables.PYTHON = 'python'
@@ -54,29 +55,23 @@ variables.CLOSURE_JAR = os.path.join('bower_components',
                                      'compiler.jar')
 
 EXECUTABLES = [variables.JSDOC, variables.PYTHON, variables.JAVA,
-               variables.GIT, variables.GJSLINT, variables.CASPERJS]
+               variables.GIT, variables.GJSLINT,variables.GULP,variables.GRUNT]
 
-# SRC = [path for path in ifind('src/mapito') if path.endswith('.js')]
-SRC = [path for path in ifind('src/mapito') if (path.endswith('.js') and not(path.startswith('src/mapito/templates_/')))]
+SRC = [path for path in ifind('src/mapito')
+           if (path.endswith('.js'))]
 
-TEST_SRC = [path for path in ifind('test/specs') if path.endswith('.js')]
-TEMPLATES_SRC = [path for path in ifind(os.path.join('src', 'mapito', 'tmpl'))
-                 if path.endswith('.soy')]
+TEMPLATES_SRC = [path for path in ifind(os.path.join('src', 'templates'))
+           if path.endswith('.js')]
+TEMPLATES_PATH = os.path.join('src', 'templates')
+TEMPLATES_BUILD_PATH = os.path.join('build', 'templates')
+
+
 EXAMPLES_SRC = [path for path in ifind(os.path.join('examples', 'stable'))
                 if path.endswith('.html')]
 EXAMPLES_SRC_JS = [path.replace('.html', '.js') for path in EXAMPLES_SRC]
-EXAMPLES_SANDBOX_SRC = [path for path in ifind(os.path.join('examples',
-                                                            'sandbox'))
-                        if path.endswith('.html')]
-EXAMPLES_SANDBOX_SRC_JS = [path.replace('.html', '.js')
-                           for path in EXAMPLES_SANDBOX_SRC]
-JSDOC_SRC = [path for path in ifind('src') if path.endswith('.jsdoc')]
-EXPORTS = [path for path in ifind('src')
-           if path.endswith('.exports')]
 OL_EXTERNS = [path for path in ifind(os.path.join(
     'bower_components', 'openlayers3', 'externs'))
     if path.endswith('.js')]
-
 REACT_EXTERNS = [os.path.join(
     'bower_components', 'react-externs', 'externs.js')]
 
@@ -85,11 +80,8 @@ COMPILED_WHITESPACE = 'build/lib/mapito-space.js'
 COMPILED_DEPS = 'build/lib/deps'
 COMPILED_SIMPLE = 'build/lib/mapito-simple.js'
 BUILDS = [COMPILED, COMPILED_SIMPLE, COMPILED_WHITESPACE]
-APIDOC = 'build/doc/apidoc'
-DOC = 'build/doc/'
-TEMPLATES_STAMP = os.path.join('build', 'templates', 'time_stamp')
 
-
+##web server component
 class Timer(object):
     """Timer measuring"""
     def __init__(self):
@@ -123,7 +115,7 @@ class Timer(object):
 
 timer = Timer()
 
-
+##web server component
 class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     """Handler of incommint HTTP request
     """
@@ -229,59 +221,40 @@ class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
         return
 
-
-@target(os.path.join(APIDOC, 'index.html'),
-        SRC,
-        'build/src/exports.js',
-        'build/src/typedefs.js')
-def build_apidoc(trgt):
-    """Generates API documentation
+@target('templates',TEMPLATES_SRC)
+def compile_templates(trgt):
+    """Clean templates
     """
-    trgt.run('%(JSDOC)s', '-c', 'doc/conf.json',
-             'src', 'bower_components/openlayers3/src/',
-             'doc/index.md',
-             '-d', APIDOC)
-    trgt.touch()
+    trgt.rm_rf('build/templates')
 
-@target('build/test_lib', SRC, TEST_SRC, COMPILED_SIMPLE)
-def test_lib(trgt):
-    """ Running casperjs tests
+    """COMPILE TEMPLATES
     """
+    trgt.run('jsx',
+             TEMPLATES_PATH,
+             TEMPLATES_BUILD_PATH)
 
-    includes = ','.join([os.path.join('build', 'lib', 'mapito-simple.js'),
-                         os.path.join('bower_components', 'closure-library',
-                                      'closure', 'goog', 'base.js')])
-    tests_src = os.path.join('test',
-                             'specs',
-                             sys.argv[2]) if (len(sys.argv) > 2) else TEST_SRC
-
-    trgt.run('%(CASPERJS)s',
-             'test',
-             '--includes=' + includes,
-             tests_src)
-
-@target(COMPILED, SRC, 'build/templates/time_stamp', COMPILED_DEPS)
+@target(COMPILED, SRC, 'templates', COMPILED_DEPS)
 def compile_lib_advanced(trgt):
     """Compile lib in advanced mode
     """
     compile_lib(trgt, 'ADVANCED')
 
 
-@target(COMPILED_SIMPLE, SRC, 'build/templates/time_stamp', COMPILED_DEPS)
+@target(COMPILED_SIMPLE, SRC, 'templates', COMPILED_DEPS)
 def compile_lib_simple(trgt):
     """Compile lib in simple mode
     """
     compile_lib(trgt, 'SIMPLE')
 
 
-@target(COMPILED_WHITESPACE, SRC, 'build/templates/time_stamp', COMPILED_DEPS)
+@target(COMPILED_WHITESPACE, SRC, 'templates', COMPILED_DEPS)
 def compile_lib_whitespace(trgt):
     """Compile lib in whitespace mode
     """
     compile_lib(trgt, 'WHITESPACE_ONLY')
 
 
-@target(COMPILED_DEPS, SRC, 'build/templates/time_stamp')
+@target(COMPILED_DEPS, SRC, 'templates')
 def compile_lib_deps(trgt):
     """Compile dependencies
     """
@@ -297,14 +270,12 @@ def compile_lib_deps(trgt):
                 '--root=bower_components/openlayers3/src/ol',
                 '--root=bower_components/openlayers3/externs',
                 '--root=src/mapito',
-                '--root=build/templates/',
+                '--root=build/templates',
                 '--namespace=mapito.App',
                 '--output_mode=%s' % 'list')
 
     # big deps fix
     deps = [dep.strip() for dep in open(COMPILED_DEPS).readlines()]
-
-
 
     # write back
     out_deps = open(COMPILED_DEPS, "w")
@@ -338,14 +309,6 @@ def compile_lib(trgt, level, inputs=[]):
     trgt.output(command)
 
 
-@target('build/templates/time_stamp')
-def make_tests_cfg(trgt):
-    """generate templates javascript files
-    """
-    trgt.makedirs(os.path.join('build', 'templates'))
-    trgt.touch()
-
-
 @target('cleanBuild')
 def clean_build(trgt):
     """Clean build directory
@@ -353,43 +316,47 @@ def clean_build(trgt):
     trgt.rm_rf('build/')
 
 
-@target('clean_bower')
+@target('cleanBower')
 def clean_bower(trgt):
     """Clean bower_components directory
     """
     trgt.rm_rf('bower_components')
 
 
-@target('build/doc')
-def mk_docdir(trgt):
-    """Make doc directory
+@target('installBower', 'cleanBuild')
+def bower(trgt):
+    """Run bower install
     """
-    trgt.makedirs('build/doc')
+    trgt.run('%(BOWER)s', 'install')
 
-@target('testtest', SRC, TEST_SRC, EXAMPLES_SRC_JS)
-def build_fix_src_timestamp(trgt):
-  print("addd")
+@target('cleanNode')
+def remove(trgt):
+    """Remove node_modules
+    """
+    trgt.rm_rf('node_modules')
 
-@target('build/fix-stamp', SRC, TEST_SRC, EXAMPLES_SRC_JS)
+
+@target('installNode')
+def installNode(trgt):
+    """Run npm install
+    """
+    trgt.run('%(NPM)s', 'install')
+
+
+@target('build/fix-stamp', SRC, EXAMPLES_SRC_JS)
 def build_fix_src_timestamp(trgt):
     """Run fix js style
     """
-
-    print(trgt.newer(trgt.dependencies))
-
-    print("_____________________________________________________")
 
     trgt.run('fixjsstyle',
              '--jslint_error=all',
              '--strict',
              trgt.newer(trgt.dependencies))
 
-
-    print("lkjehfdklashdflkahsdflkahsdfklashjfklajhdflkajhsdfklashdflkhj")
     trgt.touch()
 
 
-@target('build/lint-stamp', SRC, TEST_SRC, EXAMPLES_SRC_JS)
+@target('build/lint-stamp', SRC, EXAMPLES_SRC_JS)
 def build_lint_src_timestamp(trgt):
     """Lint source
     """
@@ -398,37 +365,6 @@ def build_lint_src_timestamp(trgt):
              '--strict',
              trgt.newer(trgt.dependencies))
     trgt.touch()
-
-
-@target('retag')
-def retag(trgt):
-    if sys.platform == 'win32':
-        trgt.run('bin\deletetag.cmd')
-    else:
-        trgt.run('sh', 'bin/deletetag.sh')
-    trgt.run('%(GIT)s', 'fetch', '-p')
-
-
-@target('updateBower', 'cleanBuild')
-def bower(trgt):
-    """Run bower install and update
-    """
-    trgt.run('%(BOWER)s', 'install')
-    trgt.run('%(BOWER)s', 'update')
-
-
-@target('gulp')
-def initgulp(trgt):
-    """Run gulp install
-    """
-    trgt.run('%(NPM)s', 'install')
-
-
-@target('build/src/exports.js', EXPORTS, SRC)
-def create_typedefs_file(trgt):
-    """Create typedefs files
-    """
-    trgt.output('%(PYTHON)s', 'bin/generate-exports.py', '--exports', EXPORTS)
 
 
 @target('serve', COMPILED_DEPS)
@@ -460,8 +396,22 @@ def check_dependencies(trgt):
     print 'For certain targets all above programs need to be present.'
 
 
+@target('examples/stable/js/timestamp')
+
+def prepareExamples(trgt):
+    """Prepare examples enviroment
+    """
+    ## FIXME: Copy test data should be there
+
+    # copy react lib to examples/stable/js
+    shutil.copy(os.path.join('bower_components', 'react', 'build','react.min.js'),
+              os.path.join('examples', 'stable','js'))
+
+    # copy proj4js lib to examples/stable/js
+    shutil.copy(os.path.join('bower_components', 'proj4js', 'dist','proj4.js'),
+              os.path.join('examples', 'stable','js'))
+
 @target('build/examples/loader.js',
-        'build/src/exports.js',
         EXAMPLES_SRC,
         EXAMPLES_SRC_JS)
 def compile_example_javascripts(trgt):
@@ -479,34 +429,13 @@ def compile_example_javascripts(trgt):
             shutil.copy(os.path.join(root, filen),
                         os.path.join('build', 'examples', 'fonts'))
 
-    # copy bootstrap fonts
-    for root, dirs, files in os.walk(os.path.join('bower_components',
-                                                  'bootstrap', 'fonts')):
-        for filen in files:
-            shutil.copy(os.path.join(root, filen),
-                        os.path.join('build', 'examples', 'fonts'))
-
-    # copy roboto fonts
-    for root, dirs, files in os.walk('fonts'):
-        for filen in files:
-            shutil.copy(os.path.join(root, filen),
-                        os.path.join('build', 'examples', 'fonts'))
-
     # copy react lib
     shutil.copy(os.path.join('bower_components', 'react', 'build','react.min.js'),
-              os.path.join('examples', 'stable','js'))
-
-    shutil.copy(os.path.join('bower_components', 'react', 'build','react.min.js'),
               os.path.join('build', 'examples','js'))
-
 
     # copy proj4js lib
     shutil.copy(os.path.join('bower_components', 'proj4js', 'dist','proj4.js'),
-              os.path.join('examples', 'stable','js'))
-
-    shutil.copy(os.path.join('bower_components', 'proj4js', 'dist','proj4.js'),
               os.path.join('build', 'examples','js'))
-
 
     # copy input static data
     trgt.cp_r(os.path.join('examples', 'stable', 'data'),
@@ -514,8 +443,10 @@ def compile_example_javascripts(trgt):
 
     # minify css by gulp
     trgt.run('%(GULP)s', 'minify-css')
-    trgt.cp(os.path.join('examples', 'stable', 'css', 'local.css'),
-            os.path.join('build', 'examples', 'css', 'local.css'))
+
+    # copy project css
+    trgt.cp(os.path.join('css', 'mapito.css'),
+            os.path.join('build', 'examples', 'css', 'mapito.css'))
 
     trgt.cp(os.path.join('examples', 'stable', 'loader-static.js'),
             os.path.join('build', 'examples', 'loader.js'))
@@ -528,25 +459,6 @@ def compile_example_javascripts(trgt):
         js_out = 'build/examples/' + jsf
 
         tar = targets.get(js_out)
-        tar.mode = 'ADVANCED'
-        tar.build()
-
-
-@target('sandbox',
-        'build/examples/loader.js',
-        EXAMPLES_SANDBOX_SRC,
-        EXAMPLES_SANDBOX_SRC_JS)
-def compile_sandbox_examples(trgt):
-    """compile sandboxs examples into single files
-    """
-    for html in EXAMPLES_SANDBOX_SRC:
-
-        (html_path, html_name) = os.path.split(html)
-        js_name = html_name.replace('.html', '.js')
-        trgt.cp(html, os.path.join('build', 'examples'))
-
-        tar_name = 'build/examples/' + js_name
-        tar = targets.get(tar_name)
         tar.mode = 'ADVANCED'
         tar.build()
 
@@ -564,26 +476,6 @@ def example_factory(js_out, js_in):
             mode = trgt.mode
         compile_lib(trgt, mode, inputs=[trgt.dependencies[0]])
 
-
-def template_factory(tmpl_in, tmpl_out):
-    """Create build target for given template
-    """
-
-    @target(tmpl_out, tmpl_in, TEMPLATES_STAMP)
-    def compile_template(trgt):
-        """Compile template"""
-        trgt.run('%(JAVA)s',
-                 '-client',
-                 '-XX:+TieredCompilation',
-                 '-jar',
-                 os.path.join('bower_components', 'closure-templates',
-                              'SoyToJsSrcCompiler.jar'),
-                 '--shouldDeclareTopLevelNamespaces', 'true',
-                 '--shouldProvideRequireSoyNamespaces', 'true',
-                 '--outputPathFormat', tmpl_out,
-                 '--srcs', tmpl_in)
-        trgt.touch()
-
 # create examples targets
 EXAMPLES_OUT = []
 for js_in in EXAMPLES_SRC_JS:
@@ -591,46 +483,17 @@ for js_in in EXAMPLES_SRC_JS:
     EXAMPLES_OUT.append(js_out)
     example_factory(js_out, js_in)
 
-# create sandbox examples targets
-EXAMPLES_SANDBOX_OUT = []
-for js_in in EXAMPLES_SANDBOX_SRC_JS:
-    js_out = js_in.replace('examples/sandbox', 'build/examples')
-    EXAMPLES_SANDBOX_OUT.append(js_out)
-    example_factory(js_out, js_in)
-
-# create template targets
-TEMPLATES_OUT = []
-for tmpl_in in TEMPLATES_SRC:
-    tmpl_out = tmpl_in.replace(
-        'src/mapito/tmpl', 'build/templates').replace('.soy', '.js')
-    TEMPLATES_OUT.append(tmpl_out)
-    template_factory(tmpl_in, tmpl_out)
-
-
-virtual('tests', 'buildexamples', 'test')
-virtual('check', 'test')
-virtual('test', 'build/test_lib')
-virtual('templates', TEMPLATES_OUT)
-virtual('testfull', 'relib', 'test')
-virtual('test_doc', 'test_apidoc')
-virtual('doc', 'userdoc', 'apidoc')
-virtual('apidoc', os.path.join(APIDOC, 'index.html'))
-virtual('userdoc', DOC)
 virtual('lint', 'build/lint-stamp')
 virtual('fix', 'build/fix-stamp')
-virtual('lib', 'fix', 'lint', 'templates', COMPILED,
+virtual('lib', 'fix', 'lint', COMPILED,
         COMPILED_WHITESPACE, COMPILED_SIMPLE)
-virtual('librigid', 'lint', 'templates', COMPILED,
-        COMPILED_WHITESPACE, COMPILED_SIMPLE)
-virtual('build', 'gulp', 'updateBower', 'lib', 'buildexamples')
+virtual('build', 'lib', 'buildexamples')
 virtual('buildexamples', 'build/examples/loader.js')
 virtual('server', 'serve')
-virtual('examples', 'buildexamples', 'serve')
-virtual('clean', 'cleanBuild', 'clean_bower')
-virtual('relib', 'cleanBuild', 'lib', 'buildexamples')
-virtual('jenkinsbuild', 'clean',
-        'gulp', 'updateBower', 'librigid', 'buildexamples')
-virtual('all', 'clean', 'build', 'test_doc', 'test')
+virtual('examples', 'build', 'serve')
+virtual('clean', 'cleanBuild')
+virtual('dev', 'cleanBower', 'cleanNode', 'installNode', 'installBower', 'examples/stable/js/timestamp')
+virtual('relib', 'cleanBuild', 'build')
 
 
 @target('help')
@@ -642,16 +505,14 @@ def print_help(trgt):
     Pmake build system for GeoSense mapping library
 
     help    - this help message
-    all     - For everything: lib, doc, test,
-    clean   - Delete build/ content
-    server  - Example server
-    doc     - API documentation and User documentation
-        apidoc  - API documentation
-        userdoc - User documentation
 
-    test    - Run test suite
-        build/test_lib - Test library
-        build/test_doc - Test doc strings
+    dev - !!! First what you need to do !!!
+          It downloads node and bower dependencies
+          Copy javascripts to example directory
+
+    clean   - Delete build/ content
+
+    server  - Example server
 
     lib   - Build the library
         build/deps              - Build deps file
@@ -660,15 +521,12 @@ def print_help(trgt):
 
     examples    - Build config files for examples and run the server
     compileexamples - Build javascripts with examples
-    sandbox     - Build sandbox examples
 
     checkdeps   - Checks whether all required development software is
                      installed on your machine.
 
-    updateBower - Pulling repository OL3, Closure, ..., rebuild
-
     Needed executables:
-        jsdoc, casperjs, jar, java, python, git
+        jar, java, python, git, gjslint
 
     """
 main()

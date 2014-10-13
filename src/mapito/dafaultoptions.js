@@ -11,7 +11,7 @@ goog.require('mapito.style.StyleOptions');
  *            projection:{{mapito.app.ProjOptions|string}},
  *            map:{{mapito.app.MapOptions}},
  *            layers: Array.<{{mapito.layer.OSMOptions}}>,
- *            style: Array.<mapito.style.StyleOptions>
+ *            style: Array.<mapito.style.StyleOptions>,
  *            theme: {{mapito.Theme}}}}
  */
 mapito.app.ProjectOptions;

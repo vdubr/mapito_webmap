@@ -20,6 +20,7 @@ mapito.uri.uriOptions;
 
 
 /**
+ * URL must by encoded by http://meyerweb.com/eric/tools/dencoder/
  * mode=RAW&x=14.83635&y=49.11928&z=13&config=data/mapito/4326.json
  * @class
  * @constructor
