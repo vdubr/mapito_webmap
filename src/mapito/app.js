@@ -122,6 +122,10 @@ mapito.App.prototype.setOptions = function(options) {
  * @private
  */
 mapito.App.prototype.getProjectOptions_ = function(path) {
+  //atention
+  var urlPath = path + '.json';
+
+
   var optionsGetter = new goog.Promise(function(resolve, reject) {
     var xhr = new goog.net.XhrIo();
     goog.events.listen(xhr, goog.net.EventType.COMPLETE, function(evt) {
@@ -129,7 +133,7 @@ mapito.App.prototype.getProjectOptions_ = function(path) {
       var obj = res.getResponseJson();
       resolve(obj);
     }, false, this);
-    xhr.send(path);
+    xhr.send(urlPath);
   });
   return optionsGetter;
 };
@@ -235,6 +239,7 @@ mapito.App.prototype.setProjectFromUri_ = function(uriOptions, projectOptions) {
         setView();
       }, function() {
         scope.setProject_(projectOptions);
+        setView();
       }, this);
 
 };

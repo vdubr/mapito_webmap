@@ -1,0 +1,2 @@
+http://localhost:8888/mapito/mapito_webmap/build/examples/mapito.html#x=13.9393&y=49.02747&z=15&config=https%3A%2F%2Fgist.githubusercontent.com%2Fvdubr%2Fdecf28d1ffabc75219d0%2Fraw%2Fd616a40660017f42ea3ab3aabaf193adf5546bc7%2Fmapitotest3857
+http://localhost:8888/mapito/mapito_webmap/build/examples/mapito.html#x=14.27843&y=48.88052&z=10&config=data%2Fmapito%2F3857
