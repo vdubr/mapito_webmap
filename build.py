@@ -69,11 +69,9 @@ TEMPLATES_BUILD_PATH = os.path.join('build', 'templates')
 EXAMPLES_SRC = [path for path in ifind(os.path.join('examples', 'stable'))
                 if path.endswith('.html')]
 EXAMPLES_SRC_JS = [path.replace('.html', '.js') for path in EXAMPLES_SRC]
-OL_EXTERNS = [path for path in ifind(os.path.join(
-    'bower_components', 'openlayers3', 'externs'))
-    if path.endswith('.js')]
-REACT_EXTERNS = [os.path.join(
-    'bower_components', 'react-externs', 'externs.js')]
+
+REACT_EXTERNS = os.path.join(
+    'bower_components', 'react-externs', 'externs.js')
 
 COMPILED = 'build/lib/mapito.js'
 COMPILED_WHITESPACE = 'build/lib/mapito-space.js'
