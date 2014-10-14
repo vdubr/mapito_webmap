@@ -77,7 +77,25 @@ COMPILED = 'build/lib/mapito.js'
 COMPILED_WHITESPACE = 'build/lib/mapito-space.js'
 COMPILED_DEPS = 'build/lib/deps'
 COMPILED_SIMPLE = 'build/lib/mapito-simple.js'
-BUILDS = [COMPILED, COMPILED_SIMPLE, COMPILED_WHITESPACE]
+# BUILDS = [COMPILED, COMPILED_SIMPLE, COMPILED_WHITESPACE]
+BUILDS = [COMPILED]
+
+OL_EXTERNS = [
+              "bower_components/openlayers3/externs/bingmaps.js",
+              "bower_components/openlayers3/externs/bootstrap.js",
+              "bower_components/openlayers3/externs/closure-compiler.js",
+              "bower_components/openlayers3/externs/example.js",
+              "bower_components/openlayers3/externs/geojson.js",
+              "bower_components/openlayers3/externs/jquery-1.7.js",
+              "bower_components/openlayers3/externs/oli.js",
+              "bower_components/openlayers3/externs/olx.js",
+              "bower_components/openlayers3/externs/proj4js.js",
+              "bower_components/openlayers3/externs/tilejson.js",
+              "bower_components/openlayers3/externs/topojson.js",
+              "bower_components/openlayers3/externs/vbarray.js"
+]
+
+
 
 ##web server component
 class Timer(object):
