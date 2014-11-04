@@ -2,6 +2,7 @@ goog.provide('mapito.style');
 goog.provide('mapito.style.StyleDefinition');
 goog.provide('mapito.style.StyleOptions');
 
+goog.require('mapito.icon.pin');
 goog.require('ol.style.Style');
 
 
@@ -48,18 +49,45 @@ mapito.style.getStyle = function(stylesOptions, styleId) {
   });
 
   if (goog.isDefAndNotNull(styleOpt)) {
-    var styleDefinition = styleOpt['def'];
-    style = new ol.style.Style({
-      fill: styleDefinition['fill'] ?
-          mapito.style.getFillStyle(styleDefinition['fill']) : undefined,
-      image: styleDefinition['image'] ?
-          mapito.style.getImageStyle(styleDefinition['image']) : undefined,
-      stroke: styleDefinition['stroke'] ?
-          mapito.style.getStrokeStyle(styleDefinition['stroke']) : undefined,
-      text: styleDefinition['text'] ?
-          mapito.style.getTextStyle(styleDefinition['text']) : undefined,
-      zIndex: styleDefinition['zIndex'] ? styleDefinition['fill'] : undefined
-    });
+
+    if (styleOpt['def']) {
+      var styleDefinition = styleOpt['def'];
+      style = new ol.style.Style({
+        fill: styleDefinition['fill'] ?
+            mapito.style.getFillStyle(styleDefinition['fill']) : undefined,
+        image: styleDefinition['image'] ?
+            mapito.style.getImageStyle(styleDefinition['image']) : undefined,
+        stroke: styleDefinition['stroke'] ?
+            mapito.style.getStrokeStyle(styleDefinition['stroke']) : undefined,
+        text: styleDefinition['text'] ?
+            mapito.style.getTextStyle(styleDefinition['text']) : undefined,
+        zIndex: styleDefinition['zIndex'] ? styleDefinition['fill'] : undefined
+      });
+    }else if (styleOpt['icon']) {
+      var iconDefinition = styleOpt['icon'];
+      var iconStyleDef = goog.object.clone(iconDefinition);
+      goog.object.remove(iconStyleDef, 'name');
+
+      var name = iconDefinition['name'];
+      var image = new Image();
+
+      switch (name) {
+        case 'pin':
+          image.src = mapito.icon.pin.src;
+          iconStyleDef.size = mapito.icon.pin.size;
+          iconStyleDef.anchor = mapito.icon.pin.anchor;
+          iconStyleDef.scale = mapito.icon.pin.scale;
+          break;
+      }
+
+      iconStyleDef.img = image;
+
+      style = new ol.style.Style({
+        image: mapito.style.getImageStyle(iconStyleDef)
+      });
+    }
+
+
   }
 
   return style;
@@ -90,7 +118,7 @@ mapito.style.getFillStyle = function(options) {
 mapito.style.getImageStyle = function(options) {
   var style;
 
-  if (goog.isDefAndNotNull(options) && options['src']) {
+  if (goog.isDefAndNotNull(options)) {
     style = new ol.style.Icon({
       anchor: options['anchor'],
       anchorOrigin: options['anchorOrigin'],
