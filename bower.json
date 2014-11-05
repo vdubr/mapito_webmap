@@ -13,7 +13,7 @@
   ],
   "license": "MIT",
     "dependencies" : {
-    "openlayers3": "https://github.com/openlayers/ol3.git#04f5768c76636a78f8d7c6d86e08798e42b016fd",
+    "openlayers3": "https://github.com/openlayers/ol3.git#afe1467ddf4be79887f1c674ee9683bd6f151884",
     "closure-compiler": "http://dl.google.com/closure-compiler/compiler-latest.zip",
     "closure-library": "https://github.com/google/closure-library/archive/fb35d5232edef340dd9a7c6e479556829d0fa452.zip",
     "proj4js": "https://github.com/proj4js/proj4js.git#2.2.2",

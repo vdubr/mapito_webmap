@@ -86,7 +86,7 @@ OL_EXTERNS = [
               "bower_components/openlayers3/externs/closure-compiler.js",
               "bower_components/openlayers3/externs/example.js",
               "bower_components/openlayers3/externs/geojson.js",
-              "bower_components/openlayers3/externs/jquery-1.7.js",
+              "bower_components/openlayers3/externs/jquery-1.9.js",
               "bower_components/openlayers3/externs/oli.js",
               "bower_components/openlayers3/externs/olx.js",
               "bower_components/openlayers3/externs/proj4js.js",
@@ -284,6 +284,7 @@ def compile_lib_deps(trgt):
                 '--root=bower_components/closure-library/' +
                 'third_party/closure/goog',
                 '--root=bower_components/openlayers3/src/ol',
+                '--root=bower_components/openlayers3/build/ol.ext/',
                 '--root=bower_components/openlayers3/externs',
                 '--root=src/mapito',
                 '--root=build/templates',
