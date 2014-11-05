@@ -275,7 +275,12 @@ mapito.App.prototype.getConfigFromUri_ = function(uriOptions) {
  */
 mapito.App.prototype.setStyles_ = function(styleOptions) {
   if (goog.isDefAndNotNull(styleOptions)) {
-    this.styles_ = styleOptions;
+    var styles = {};
+    goog.array.forEach(styleOptions, function(style) {
+      styles[style.id] = mapito.style.getStyle(style);
+    });
+
+    this.styles_ = styles;
   }
 };
 
@@ -453,7 +458,7 @@ mapito.App.prototype.handleAddFeature_ = function(evt) {
   var feature = evt['feature'];
   var styleId = feature.get('styleId_');
   if (goog.isDefAndNotNull(styleId)) {
-    var style = mapito.style.getStyle(this.styles_, styleId);
+    var style = this.styles_[styleId];
     if (goog.isDefAndNotNull(style)) {
       feature.setStyle(style);
     }

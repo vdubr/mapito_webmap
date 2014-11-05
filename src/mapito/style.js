@@ -29,7 +29,7 @@ mapito.style.StyleDefinition;
  * @param {number} resolution
  */
 mapito.style.getStyleFunction = function(feature, resolution) {
-  var styleId = featire.get('styleId_');
+  var styleId = feature.get('styleId_');
   if (goog.isDefAndNotNull(styleId)) {
 
   }
@@ -38,20 +38,19 @@ mapito.style.getStyleFunction = function(feature, resolution) {
 
 /**
  * Return style function for given style definition
- * @param {Array.<mapito.style.StyleOptions>} stylesOptions
- * @param {number} styleId
+ * @param {mapito.style.StyleOptions} stylesOption
  * @return {mapito.style.StyleOptions|undefined}
  */
-mapito.style.getStyle = function(stylesOptions, styleId) {
+mapito.style.getStyle = function(stylesOption) {
   var style;
-  var styleOpt = goog.array.find(stylesOptions, function(stylesOption) {
-    return stylesOption['id'] === styleId;
-  });
+  // goog.array.find(stylesOptions, function(stylesOption) {
+  //   return stylesOption['id'] === styleId;
+  // });
 
-  if (goog.isDefAndNotNull(styleOpt)) {
+  if (goog.isDefAndNotNull(stylesOption)) {
 
-    if (styleOpt['def']) {
-      var styleDefinition = styleOpt['def'];
+    if (stylesOption['def']) {
+      var styleDefinition = stylesOption['def'];
       style = new ol.style.Style({
         fill: styleDefinition['fill'] ?
             mapito.style.getFillStyle(styleDefinition['fill']) : undefined,
@@ -63,8 +62,8 @@ mapito.style.getStyle = function(stylesOptions, styleId) {
             mapito.style.getTextStyle(styleDefinition['text']) : undefined,
         zIndex: styleDefinition['zIndex'] ? styleDefinition['fill'] : undefined
       });
-    }else if (styleOpt['icon']) {
-      var iconDefinition = styleOpt['icon'];
+    }else if (stylesOption['icon']) {
+      var iconDefinition = stylesOption['icon'];
       var iconStyleDef = goog.object.clone(iconDefinition);
       goog.object.remove(iconStyleDef, 'name');
 
