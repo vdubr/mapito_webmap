@@ -1,0 +1,58 @@
+{
+  "projection":"EPSG:3857",
+  "map":{
+    "init":{
+      "center":[3172499.3773779627, 5783219.338738712],
+      "zoom":2,
+      "extent": [2911593.302404433, 5680735.776786893, 3400790.2834295607, 6205399.538936342]
+    },
+    "baseResolution":1222.992452421875,
+    "resolutionsLevels":11,
+    "useURIcenter":false,
+    "extent": [2911593.302404433, 5680735.776786893, 3400790.2834295607, 6205399.538936342]
+  },
+  "layers":[
+    {
+      "type":"osm",
+      "config":{
+        "name":"osm",
+        "baselayer":true,
+        "visible":true,
+        "alpha":0,
+        "reload":0,
+        "tags":["podkladovka"]
+        }
+    },
+    {
+      "type":"geojson",
+      "specs":{
+        "path":"./data/vector/4326/wells.geojson",
+        "styleId":1,
+        "style":"stylefunction",
+        "sourceProjection":"EPSG:4326",
+        "destinationProjection":"EPSG:3857"
+      },
+      "config":{
+        "id":"wells",
+        "name":"First vector",
+        "baselayer":false,
+        "visible":true,
+        "tags":["Vector","aaa"],
+        "events":["feature:click"]
+        }
+    }
+  ],
+  "theme":{
+  },
+  "styles":[
+    {
+      "id":1,
+      "def":{
+        "image": {
+          "src":"./data/images/tree.png",
+          "scale":1
+         }
+      }
+    }
+  ]
+}

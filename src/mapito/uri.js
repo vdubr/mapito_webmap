@@ -1,5 +1,4 @@
-goog.provide('mapito.Uri');
-goog.provide('mapito.Uri.Events');
+goog.provide('mapito.uri');
 goog.provide('mapito.uri.uriOptions');
 
 goog.require('goog.Uri');
@@ -22,26 +21,34 @@ mapito.uri.uriOptions;
 /**
  * URL must by encoded by http://meyerweb.com/eric/tools/dencoder/
  * mode=RAW&x=14.83635&y=49.11928&z=13&config=data/mapito/4326.json
- * @class
- * @constructor
- * @extends {ol.Object}
  */
-mapito.Uri = function() {
-
-  goog.base(this);
-
-};
-goog.inherits(mapito.Uri, ol.Object);
 
 
 /**
- * FIXME define type
+  * @return {?goog.Uri.QueryData}
+  */
+mapito.uri.getQueryData = function() {
+  var query = null;
+  var uri = new goog.Uri(document.location);
+  var queryData = uri.getQueryData();
+  var hashQueryData = new goog.Uri.QueryData(uri.getFragment());
+
+  if (queryData.getKeys().length > 0) {
+    query = queryData;
+  }else if (hashQueryData.getKeys().length > 0) {
+    query = hashQueryData;
+  }
+  return query;
+};
+
+
+/**
  * @return {?mapito.uri.uriOptions}
  */
-mapito.Uri.prototype.getSettings = function() {
+mapito.uri.getSettings = function() {
   var settings = null;
 
-  var queryData = this.getQueryData();
+  var queryData = mapito.uri.getQueryData();
 
   if (!goog.isDefAndNotNull(queryData)) {
     return null;
@@ -97,34 +104,14 @@ mapito.Uri.prototype.getSettings = function() {
 
 
 /**
- * @return {?goog.Uri.QueryData}
+ * @param {ol.Coordinate} center
+ * @param {number} zoom
+ * @param {ol.proj.ProjectionLike} projection
  */
-mapito.Uri.prototype.getQueryData = function() {
-  var query = null;
-  var uri = new goog.Uri(document.location);
-  var queryData = uri.getQueryData();
-  var hashQueryData = new goog.Uri.QueryData(uri.getFragment());
+mapito.uri.propagateViewChange = function(center, zoom, projection) {
+  var wgsCoords = mapito.transform.coordsToWgs(center, projection);
 
-  if (queryData.getKeys().length > 0) {
-    query = queryData;
-  }else if (hashQueryData.getKeys().length > 0) {
-    query = hashQueryData;
-  }
-  return query;
-};
-
-
-/**
- * @param {ol.View} view
- */
-mapito.Uri.prototype.propagateViewChange = function(view) {
-  var mapCoords = view.getCenter();
-  var zoom = view.getZoom();
-  var projection = view.getProjection();
-
-  var wgsCoords = mapito.transform.coordsToWgs(mapCoords, projection);
-
-  var queryData = this.getQueryData();
+  var queryData = mapito.uri.getQueryData();
   if (!goog.isDefAndNotNull(queryData)) {
     queryData = new goog.Uri.QueryData();
   }
@@ -140,13 +127,4 @@ mapito.Uri.prototype.propagateViewChange = function(view) {
   var hash = queryData.toLocaleString();
 
   window.location.hash = hash;
-};
-
-
-/**
- * @enum {string}
- */
-mapito.Uri.Events = {
-  VIEW_SET: 'viewset',
-  PROJECT_SET: 'projectset'
 };

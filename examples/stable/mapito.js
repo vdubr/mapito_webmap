@@ -3,22 +3,31 @@ goog.require('mapito.App.Events');
 goog.require('mapito.app.Options');
 goog.provide('mapito.start');
 
+var eventListener = function(evt) {
+  window['console']['log'](evt);
+};
+
 
 /**
  * Start function
  */
 mapito.start = function() {
   var localConfig = {
-    target: 'mapitoMap'
+    target: 'mapitoMap',
+    path: './data/mapito/moldavia'
   };
 
   var app = new mapito.App();
 
-  goog.events.listen(app, mapito.App.Events.PROJECT_SET, function() {
+  var onProjectLoaded = function() {
     app.init();
-    window.app = app;
-  });
+    window['app'] = app;
+    window['console']['log']('app is loaded');
+  };
 
-  app.setOptions(/**@type {mapito.app.Options}*/(localConfig));
+  app.setOptions(/**@type {mapito.app.Options}*/(localConfig), onProjectLoaded);
+
+  app.setEventListener(eventListener);
 };
+
 goog.exportSymbol('mapito.start', mapito.start);

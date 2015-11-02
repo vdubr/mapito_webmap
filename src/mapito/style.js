@@ -9,6 +9,7 @@ goog.require('ol.style.Style');
 /**
  * @typedef {{id: number,
  *            def: {mapito.style.StyleDefinition}
+ *            icon: {mapito.style.IconDefinition=}
  *           }}
  */
 mapito.style.StyleOptions;
@@ -21,6 +22,13 @@ mapito.style.StyleOptions;
  *           }}
  */
 mapito.style.StyleDefinition;
+
+
+/**
+ * @typedef {{
+ *           }}
+ */
+mapito.style.IconDefinition;
 
 
 /**
@@ -39,7 +47,7 @@ mapito.style.getStyleFunction = function(feature, resolution) {
 /**
  * Return style function for given style definition
  * @param {mapito.style.StyleOptions} stylesOption
- * @return {mapito.style.StyleOptions|undefined}
+ * @return {ol.style.Style|undefined}
  */
 mapito.style.getStyle = function(stylesOption) {
   var style;
@@ -48,20 +56,9 @@ mapito.style.getStyle = function(stylesOption) {
   // });
 
   if (goog.isDefAndNotNull(stylesOption)) {
-
+    var style;
     if (stylesOption['def']) {
-      var styleDefinition = stylesOption['def'];
-      style = new ol.style.Style({
-        fill: styleDefinition['fill'] ?
-            mapito.style.getFillStyle(styleDefinition['fill']) : undefined,
-        image: styleDefinition['image'] ?
-            mapito.style.getImageStyle(styleDefinition['image']) : undefined,
-        stroke: styleDefinition['stroke'] ?
-            mapito.style.getStrokeStyle(styleDefinition['stroke']) : undefined,
-        text: styleDefinition['text'] ?
-            mapito.style.getTextStyle(styleDefinition['text']) : undefined,
-        zIndex: styleDefinition['zIndex'] ? styleDefinition['fill'] : undefined
-      });
+      style = mapito.style.getStyleFromDefinition(stylesOption['def']);
     }else if (stylesOption['icon']) {
       var iconDefinition = stylesOption['icon'];
       var iconStyleDef = goog.object.clone(iconDefinition);
@@ -91,6 +88,40 @@ mapito.style.getStyle = function(stylesOption) {
 
   return style;
 };
+goog.exportProperty(
+    mapito.style,
+    'getStyle',
+    mapito.style.getStyle);
+
+
+/**
+ * Return style function for given style definition
+ * @param {mapito.style.styleDefinition} styleDefinition
+ * @return {ol.style.Style|undefined}
+ */
+mapito.style.getStyleFromDefinition = function(styleDefinition) {
+  if (!styleDefinition) {
+    return;
+  }
+
+  var style = new ol.style.Style({
+    fill: styleDefinition['fill'] ?
+        mapito.style.getFillStyle(styleDefinition['fill']) : undefined,
+    image: styleDefinition['image'] ?
+        mapito.style.getImageStyle(styleDefinition['image']) : undefined,
+    stroke: styleDefinition['stroke'] ?
+        mapito.style.getStrokeStyle(styleDefinition['stroke']) : undefined,
+    text: styleDefinition['text'] ?
+        mapito.style.getTextStyle(styleDefinition['text']) : undefined,
+    zIndex: styleDefinition['zIndex'] ? styleDefinition['fill'] : undefined
+  });
+
+  return style;
+};
+goog.exportProperty(
+    mapito.style,
+    'getStyleFromDefinition',
+    mapito.style.getStyleFromDefinition);
 
 
 /**
@@ -185,3 +216,5 @@ mapito.style.getTextStyle = function(options) {
 
   return style;
 };
+
+goog.exportSymbol('mapito.style', mapito.style);

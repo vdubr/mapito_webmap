@@ -12,7 +12,8 @@ goog.require('ol.source.Vector');
 /**
  * @typedef {{
  *            path: string,
- *            projection: string,
+ *            sourceProjection: string,
+ *            destinationProjection: string,
  *            styleId: number
  *           }}
  */
@@ -21,25 +22,23 @@ mapito.layer.GEOJSONOptions;
 
 /**
  * @param {string} path
+ * @param {ol.Projection} sourceProjection
+ * @param {ol.Projection} destinationProjection
  * @return {goog.Promise}
  * @private
  */
-mapito.layer.geojson.loadGeojson_ = function(path) {
+mapito.layer.geojson.loadGeojson_ = function(path, sourceProjection,
+    destinationProjection) {
 
   var promise = new goog.Promise(function(resolve, reject) {
 
     var xhr = new goog.net.XhrIo();
 
-    var harvestGeojsonResponse = function(evt) {
-      var res = evt.target;
-      var obj = res.getResponseJson();
-      var geojsonFormat = new ol.format.GeoJSON();
-      var features = geojsonFormat.readFeaturesFromObject(obj);
+    goog.events.listen(xhr, goog.net.EventType.COMPLETE, function(evt) {
+      var features = mapito.layer.geojson.onFeaturesLoadEnd_(
+          evt, sourceProjection, destinationProjection);
       resolve(features);
-    };
-
-    goog.events.listen(xhr, goog.net.EventType.COMPLETE,
-        harvestGeojsonResponse);
+    });
     xhr.send(path);
 
   });
@@ -49,33 +48,36 @@ mapito.layer.geojson.loadGeojson_ = function(path) {
 
 
 /**
+ * @param {Event} evt
+ * @param {ol.Projection} sourceProjection
+ * @param {ol.Projection} destinationProjection
+ * @return {Array.<ol.Feature>}
+ * @private
+ */
+mapito.layer.geojson.onFeaturesLoadEnd_ = function(
+    evt, sourceProjection, destinationProjection) {
+  var res = evt.target;
+  var obj = res.getResponseJson();
+  var geojsonFormat = new ol.format.GeoJSON();
+  //read and transform features
+  var options = {
+    dataProjection: sourceProjection,
+    featureProjection: destinationProjection
+  };
+  var features = geojsonFormat.readFeaturesFromObject(obj, options);
+  return features;
+};
+
+
+/**
  * @param {mapito.layer.GEOJSONOptions} GEOJSONOptions
  * @return {ol.layer.Vector}
  */
 mapito.layer.geojson.getGEOJSONLayer = function(GEOJSONOptions) {
-  var path = GEOJSONOptions['path'];
-  var styleId = GEOJSONOptions['styleId'];
-  var projection = GEOJSONOptions['projection'];
-  //var layerStyle = mapito.style.getStyle();
-
-  var source = new ol.source.Vector({
-    projection: ol.proj.get(projection)
-  });
+  var source = new ol.source.Vector();
 
   var layer = new ol.layer.Vector({
     source: source
-  });
-
-  mapito.layer.geojson.loadGeojson_(path).then(function(features) {
-    goog.array.forEach(features, function(feature) {
-      if (goog.isDefAndNotNull(styleId) && goog.isNumber(styleId) &&
-          !feature.get('styleId_')) {
-        feature.set('styleId_', styleId);
-        //  feature.setStyle(style);
-      }
-    });
-
-    source.addFeatures(features);
   });
 
   return layer;
@@ -83,14 +85,27 @@ mapito.layer.geojson.getGEOJSONLayer = function(GEOJSONOptions) {
 
 
 /**
- * @param {number} styleId
- * @param {Array.<mapito.style.StyleOptions>} styleOptions
+ * @param {ol.layer.Vector} layer
+ * @return {Promise}
  */
-mapito.layer.geojson.getStyle = function(styleId, styleOptions) {
-  var styleOption = goog.array.filter(styleOptions, function(opt) {
-    return opt['id'] === styleId;
-  });
+mapito.layer.geojson.loadLayer = function(layer) {
+  var source = layer.getSource();
+  var layerSpecs = layer.get('layerSpecs_');
+  var sourceProjection = layerSpecs['sourceProjection'];
+  var destinationProjection = layerSpecs['destinationProjection'];
+  var path = layerSpecs['path'];
+  var styleId = layerSpecs['styleId'];
 
-  window['console']['log'](styleOption);
+  return mapito.layer.geojson.loadGeojson_(
+      path, sourceProjection, destinationProjection).then(function(features) {
+    goog.array.forEach(features, function(feature) {
+      if (goog.isDefAndNotNull(styleId) && goog.isNumber(styleId) &&
+          !feature.get('styleId_')) {
+        feature.set('styleId_', styleId);
+      }
+    });
+
+    source.addFeatures(features);
+  });
 
 };

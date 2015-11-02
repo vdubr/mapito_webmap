@@ -70,9 +70,6 @@ EXAMPLES_SRC = [path for path in ifind(os.path.join('examples', 'stable'))
                 if path.endswith('.html')]
 EXAMPLES_SRC_JS = [path.replace('.html', '.js') for path in EXAMPLES_SRC]
 
-REACT_EXTERNS = os.path.join(
-    'bower_components', 'react-externs', 'externs.js')
-
 COMPILED = 'build/lib/mapito.js'
 COMPILED_WHITESPACE = 'build/lib/mapito-space.js'
 COMPILED_DEPS = 'build/lib/deps'
@@ -80,7 +77,7 @@ COMPILED_SIMPLE = 'build/lib/mapito-simple.js'
 # BUILDS = [COMPILED, COMPILED_SIMPLE, COMPILED_WHITESPACE]
 BUILDS = [COMPILED]
 
-OL_EXTERNS = [
+EXTERNS = [
               "bower_components/openlayers3/externs/bingmaps.js",
               "bower_components/openlayers3/externs/bootstrap.js",
               "bower_components/openlayers3/externs/closure-compiler.js",
@@ -92,7 +89,8 @@ OL_EXTERNS = [
               "bower_components/openlayers3/externs/proj4js.js",
               "bower_components/openlayers3/externs/tilejson.js",
               "bower_components/openlayers3/externs/topojson.js",
-              "bower_components/openlayers3/externs/vbarray.js"
+              "bower_components/openlayers3/externs/vbarray.js",
+              "externs/react.js"
 ]
 
 
@@ -245,8 +243,9 @@ def compile_templates(trgt):
 
     """COMPILE TEMPLATES
     """
-    trgt.run('jsx',
+    trgt.run('babel',
              TEMPLATES_PATH,
+             '-d',
              TEMPLATES_BUILD_PATH)
 
 @target(COMPILED, SRC, 'templates', COMPILED_DEPS)
@@ -309,14 +308,14 @@ def compile_lib(trgt, level, inputs=[]):
                '-jar',
                variables.CLOSURE_JAR,
                '--language_in', 'ECMASCRIPT5_STRICT',
-               '--compilation_level=%s' % level,
-               '--externs',REACT_EXTERNS]
+               '--compilation_level=%s' % level
+               ]
 
     for dep in deps:
         command.append('--js')
         command.append(dep)
 
-    for extern in OL_EXTERNS:
+    for extern in EXTERNS:
         command.append('--externs')
         command.append(extern)
 
@@ -506,7 +505,7 @@ virtual('lib', 'fix', 'lint', COMPILED,
         COMPILED_WHITESPACE, COMPILED_SIMPLE)
 virtual('build', 'lib', 'buildexamples')
 virtual('buildexamples', 'build/examples/loader.js')
-virtual('server', 'serve')
+virtual('server', 'buildexamples', 'serve')
 virtual('examples', 'build', 'serve')
 virtual('clean', 'cleanBuild')
 virtual('dev', 'cleanBower', 'cleanNode', 'installNode', 'installBower', 'examples/stable/js/timestamp')
@@ -529,7 +528,11 @@ def print_help(trgt):
 
     clean   - Delete build/ content
 
-    server  - Example server
+    serve  - Example server
+
+    lint  - Show syntax errors
+
+    fix  - Fix syntax errors
 
     lib   - Build the library
         build/deps              - Build deps file

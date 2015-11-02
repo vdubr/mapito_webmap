@@ -6,11 +6,12 @@ goog.require('goog.Promise');
 goog.require('goog.dom');
 goog.require('goog.net.XhrIo');
 goog.require('mapito.DefaultOptions');
-goog.require('mapito.Uri');
 goog.require('mapito.layer');
+goog.require('mapito.layer.Events');
 goog.require('mapito.style');
 goog.require('mapito.style.StyleOptions');
 goog.require('mapito.transform');
+goog.require('mapito.uri');
 goog.require('mapito.uri.uriOptions');
 goog.require('ol.Map');
 goog.require('ol.Object');
@@ -23,9 +24,10 @@ goog.require('templates.project');
 
 
 /**
- * @typedef {{path:string,
- *            type:string,
- *            target:string}}
+ * @typedef {{path:(string|undefined),
+ *            target:(string|undefined),
+ *            projectOptions:({mapito.app.ProjectOptions}|undefined)
+ *          }}
  */
 mapito.app.Options;
 
@@ -40,9 +42,11 @@ mapito.App = function() {
 
   this.listenersKey_ = [];
 
-  this.uriParser_ = new mapito.Uri();
+  this.projectOptions_ = mapito.DefaultOptions;
 
-  //var defaultOptions = mapito.DefaultOptions;
+  this.styles_ = {};
+
+  this.target_ = document.querySelector('#mapito') || null;
 
   goog.base(this);
 
@@ -51,10 +55,10 @@ goog.inherits(mapito.App, ol.Object);
 
 
 /**
- * @type {?Array.<mapito.style.StyleOptions>}
+ * @type {?function}
  * @private
  */
-mapito.App.prototype.styles_ = null;
+mapito.App.prototype.eventListener_ = null;
 
 
 /**
@@ -62,6 +66,27 @@ mapito.App.prototype.styles_ = null;
  * @private
  */
 mapito.App.prototype.listenersKey_ = null;
+
+
+/**
+ * @type {?ol.Map}
+ * @private
+ */
+mapito.App.prototype.map_ = null;
+
+
+/**
+ * @type {?mapito.app.ProjectOptions}
+ * @private
+ */
+mapito.App.prototype.projectOptions_ = null;
+
+
+/**
+ * @type {Object.<number,ol.style.Style>}
+ * @private
+ */
+mapito.App.prototype.styles_ = null;
 
 
 /**
@@ -79,39 +104,185 @@ mapito.App.prototype.trackUri_ = true;
 
 
 /**
- * @type {?mapito.Uri}
- * @private
+ * @param {ol.style.Style} style
+ * @param {number} styleId
  */
-mapito.App.prototype.uriParser_ = null;
+mapito.App.prototype.addStyle = function(style, styleId) {
+  var styleExists = this.getStyleById(styleId);
+  if (!styleExists) {
+    this.styles_[styleId] = style;
+  }
+};
+goog.exportProperty(
+    mapito.App.prototype,
+    'addStyle',
+    mapito.App.prototype.addStyle);
 
 
 /**
- * @type {?mapito.app.ProjectOptions}
- * @private
+ * @param {number|string} layerId
+ * @return {ol.layer.Base|undefined}
  */
-mapito.App.prototype.projectOptions_ = null;
+mapito.App.prototype.getLayerById = function(layerId) {
+  //get layer by id
+  var layers = this.map_.getLayers();
+  var searchLayer, id;
+  layers.forEach(function(layer) {
+    id = layer.get('id');
+    if (layerId == id) {
+      searchLayer = layer;
+      return;
+    }
+  });
+  return searchLayer;
+};
+goog.exportProperty(
+    mapito.App.prototype,
+    'getLayerById',
+    mapito.App.prototype.getLayerById);
 
 
 /**
- * @type {?ol.Map}
- * @private
+ * @return {Array.<mapito.layer.Config>}
  */
-mapito.App.prototype.map_ = null;
+mapito.App.prototype.getLayers = function() {
+  var layersConfigs = [];
+
+  var layers = this.map_.getLayers();
+  var layerConfig;
+
+  layers.forEach(function(layer) {
+
+    layerConfig = mapito.layer.getLayerConfig(layer);
+
+    layersConfigs.push(layerConfig);
+  });
+
+  return layersConfigs;
+
+};
+goog.exportProperty(
+    mapito.App.prototype,
+    'getLayers',
+    mapito.App.prototype.getLayers);
+
+
+/**
+ * @param {number|string} layerId
+ * @return {ol.Collection.<ol.Feature>|undefined}
+ */
+mapito.App.prototype.getLayerFeatures = function(layerId) {
+
+  var features;
+
+  var layer = this.getLayerById(layerId);
+
+  if (!layer) {
+    return features;
+  }
+
+  var source = layer.getSource();
+
+  if (source instanceof ol.source.Vector) {
+    features = source.getFeatures();
+  }
+
+  return features;
+
+};
+goog.exportProperty(
+    mapito.App.prototype,
+    'getLayerFeatures',
+    mapito.App.prototype.getLayerFeatures);
+
+
+/**
+ * @param {number} styleId
+ * @return {ol.style.Style|undefined}
+ */
+mapito.App.prototype.getStyleById = function(styleId) {
+  return this.styles_[styleId];
+};
+goog.exportProperty(
+    mapito.App.prototype,
+    'getStyleById',
+    mapito.App.prototype.getStyleById);
 
 
 /**
  * @param {mapito.app.Options} options
+ * @param {?function} callback
  */
-mapito.App.prototype.setOptions = function(options) {
-  var baseOptions = options;
-  this.target_ = document.querySelector('#' + baseOptions['target']) || null;
-
-  if (goog.isDefAndNotNull(baseOptions['path'])) {
-    var getProjectOptions = this.getProjectOptions_(baseOptions['path']);
-    getProjectOptions.then(this.setProjectOptions_, null, this);
-  }else {
-    this.setProjectOptions_(mapito.DefaultOptions);
+mapito.App.prototype.setOptions = function(options, callback) {
+  if (!options) {
+    window['console']['error']('Options is not defined.');
+    return;
   }
+
+  if (options['target']) {
+    this.target_ = document.querySelector('#' + options['target']);
+  }
+
+  if (goog.isDefAndNotNull(options['projectOptions'])) {
+    this.setProjectOptions_(options['projectOptions']).then(callback);
+  } else if (goog.isDefAndNotNull(options['path'])) {
+    var getProjectOptions = this.getProjectOptions_(options['path']);
+    getProjectOptions.then(this.setProjectOptions_, null, this).then(callback);
+  } else {
+    callback();
+    this.dispatchEvent_({'type': mapito.App.Events.PROJECT_SET});
+  }
+
+
+};
+
+goog.exportProperty(
+    mapito.App.prototype,
+    'setOptions',
+    mapito.App.prototype.setOptions);
+
+
+/**
+ * @param {function} listener
+ */
+mapito.App.prototype.setEventListener = function(listener) {
+  this.eventListener_ = listener;
+};
+goog.exportProperty(
+    mapito.App.prototype,
+    'setEventListener',
+    mapito.App.prototype.setEventListener);
+
+
+/**
+ * @param {ol.Feature} feature
+ * @param {number} styleId
+ */
+mapito.App.prototype.setFeatureStyle = function(feature, styleId) {
+  if (goog.isDefAndNotNull(feature) && goog.isDefAndNotNull(styleId)) {
+    var style = this.getStyleById(styleId);
+    if (goog.isDefAndNotNull(style)) {
+      feature.setStyle(style);
+    }
+  }
+};
+goog.exportProperty(
+    mapito.App.prototype,
+    'setFeatureStyle',
+    mapito.App.prototype.setFeatureStyle);
+
+
+/**
+ * @param {Object} eventObject
+ * @private
+ */
+mapito.App.prototype.dispatchEvent_ = function(eventObject) {
+  if (this.eventListener_) {
+    this.eventListener_(eventObject);
+  }
+
+  goog.events.dispatchEvent(
+      this, new goog.events.Event(eventObject['eventType']));
 
 };
 
@@ -125,7 +296,6 @@ mapito.App.prototype.getProjectOptions_ = function(path) {
   //atention
   var urlPath = path + '.json';
 
-
   var optionsGetter = new goog.Promise(function(resolve, reject) {
     var xhr = new goog.net.XhrIo();
     goog.events.listen(xhr, goog.net.EventType.COMPLETE, function(evt) {
@@ -133,6 +303,7 @@ mapito.App.prototype.getProjectOptions_ = function(path) {
       var obj = res.getResponseJson();
       resolve(obj);
     }, false, this);
+    window['console']['log'](urlPath);
     xhr.send(urlPath);
   });
   return optionsGetter;
@@ -141,6 +312,7 @@ mapito.App.prototype.getProjectOptions_ = function(path) {
 
 /**
  * @param {mapito.app.ProjectOptions} projectOptions
+ * @return {goog.Promise}
  * @private
  */
 mapito.App.prototype.setProjectOptions_ = function(projectOptions) {
@@ -148,10 +320,15 @@ mapito.App.prototype.setProjectOptions_ = function(projectOptions) {
   // this.setMapOptions_(projectOptions.map)
   // this.setLayersOptions_(projectOptions.layers)
   //this.setModulesOptions_(projectOptions.modules)
-  this.projectOptions_ = projectOptions;
+  var optionsSetter = new goog.Promise(function(resolve, reject) {
 
-  goog.events.dispatchEvent(
-      this, new goog.events.Event(mapito.App.Events.PROJECT_SET));
+    this.projectOptions_ = projectOptions;
+
+    resolve();
+  }, this);
+
+  this.dispatchEvent_({'eventType': mapito.App.Events.PROJECT_SET});
+  return optionsSetter;
 };
 
 
@@ -159,20 +336,17 @@ mapito.App.prototype.setProjectOptions_ = function(projectOptions) {
  * Render the mapito project
  */
 mapito.App.prototype.init = function() {
-  if (goog.isDefAndNotNull(this.target_)) {
-    //TODO check react and templates -> if the are not defined use simple
-    //     good for use vithout react
-    if (goog.isDefAndNotNull(window['React'])) {
-      React.renderComponent(templates.project(), this.target_);
-    }else {
-      goog.dom.appendChild(this.target_, templates.project);
-    }
 
-  }
+  this.renderMapTarget_(this.target_);
+
 
   this.startProject_(this.projectOptions_);
 
 };
+goog.exportProperty(
+    mapito.App.prototype,
+    'init',
+    mapito.App.prototype.init);
 
 
 /**
@@ -181,12 +355,16 @@ mapito.App.prototype.init = function() {
  * @private
  */
 mapito.App.prototype.startProject_ = function(projectOptions) {
-  var uriSettings = this.uriParser_.getSettings();
-  if (goog.isDefAndNotNull(uriSettings)) {
-    this.setProjectFromUri_(uriSettings, projectOptions);
-  }else {
+  var uriOptions = mapito.uri.getSettings();
+
+  if (goog.isDefAndNotNull(uriOptions) &&
+      goog.isDefAndNotNull(uriOptions['config'])) {
+    this.setProjectFromUri_(uriOptions);
+  }else if (projectOptions) {
     this.setProject_(projectOptions);
   }
+
+
 };
 
 
@@ -199,49 +377,46 @@ mapito.App.prototype.setProject_ = function(projectOptions) {
   this.setMap_(projectOptions['map'], projection);
   this.setLayers_(projectOptions['layers']);
   this.setStyles_(projectOptions['styles']);
+
+  if (projectOptions && projectOptions['map'] &&
+      projectOptions['map']['useURIcenter']) {
+    var uriOptions = mapito.uri.getSettings();
+    this.setViewFromUri_(uriOptions, this.map_.getView());
+  }
 };
 
 
 /**
  * @param {mapito.uri.uriOptions} uriOptions
- * @param {mapito.app.ProjectOptions} projectOptions
  * @private
  */
-mapito.App.prototype.setProjectFromUri_ = function(uriOptions, projectOptions) {
+mapito.App.prototype.setProjectFromUri_ = function(uriOptions) {
+  this.getConfigFromUri_(uriOptions).then(this.setProject_, null, this);
+};
 
-  //TODO replace
-  var scope = this;
 
+/**
+ * @param {mapito.uri.uriOptions} uriOptions
+ * @param {ol.View} view
+ * @private
+ */
+mapito.App.prototype.setViewFromUri_ = function(uriOptions, view) {
 
-  var setView = function() {
-    var view = scope.map_.getView();
+  //set center
+  if (uriOptions.x && uriOptions.y) {
+    var appProj = view.getProjection();
+    var srcCoords = [uriOptions.x, uriOptions.y];
+    var coords = mapito.transform.coordsWgsTo(srcCoords, appProj);
 
-    //set center and zoom
-    if (uriOptions.x && uriOptions.y) {
-      var appProj = scope.map_.getView().getProjection();
-      var srcCoords = [uriOptions.x, uriOptions.y];
-      var coords = mapito.transform.coordsWgsTo(srcCoords, appProj);
-
-      if (goog.isDefAndNotNull(coords)) {
-        view.setCenter(coords);
-      }
-
-      if (uriOptions.z) {
-        view.setZoom(uriOptions.z);
-      }
+    if (goog.isDefAndNotNull(coords)) {
+      view.setCenter(coords);
     }
-  };
+  }
 
-
-  this.getConfigFromUri_(uriOptions).then(
-      function(config) {
-        scope.setProject_(config);
-        setView();
-      }, function() {
-        scope.setProject_(projectOptions);
-        setView();
-      }, this);
-
+  //set zoom
+  if (uriOptions.z) {
+    view.setZoom(uriOptions.z);
+  }
 };
 
 
@@ -252,7 +427,6 @@ mapito.App.prototype.setProjectFromUri_ = function(uriOptions, projectOptions) {
  * @private
  */
 mapito.App.prototype.getConfigFromUri_ = function(uriOptions) {
-
   var promise = new goog.Promise(function(resolve, reject) {
     if (goog.object.containsKey(uriOptions, 'config')) {
       this.getProjectOptions_(uriOptions['config']).then(
@@ -275,12 +449,13 @@ mapito.App.prototype.getConfigFromUri_ = function(uriOptions) {
  */
 mapito.App.prototype.setStyles_ = function(styleOptions) {
   if (goog.isDefAndNotNull(styleOptions)) {
-    var styles = {};
-    goog.array.forEach(styleOptions, function(style) {
-      styles[style.id] = mapito.style.getStyle(style);
-    });
-
-    this.styles_ = styles;
+    var style;
+    goog.array.forEach(styleOptions, function(styleOption) {
+      style = mapito.style.getStyle(styleOption);
+      if (style) {
+        this.addStyle(style, styleOption['id']);
+      }
+    },this);
   }
 };
 
@@ -315,24 +490,35 @@ mapito.App.prototype.getProjection_ = function(projOptions) {
 mapito.App.prototype.setMap_ = function(mapOptions, projection) {
   var mapTarget = this.target_.querySelector('.mapito-mapview');
 
-  // var resolutions = this.getResolutions_(
-  //     mapOptions['baseResolution'], mapOptions['resolutionsLevels']);
+  var resolutions = this.getResolutions_(
+      mapOptions['baseResolution'], mapOptions['resolutionsLevels']);
 
-  //var projection = this.getProjection_(mapOptions['proj']);
+  var zoom, center, zoomExtent;
+  if (mapOptions['init']) {
+    zoom = mapOptions['init']['zoom'] || 0;
+    center = mapOptions['init']['center'];
+    zoomExtent = mapOptions['init']['extent'];
+  }
 
   var map_options = {
     target: mapTarget,
     renderer: ol.RendererType.CANVAS,
     view: new ol.View({
-      center: mapOptions['center'],
-      zoom: mapOptions['zoom'],
-      //  resolutions: resolutions,
-      //projection: mapOptions['proj']
-      projection: projection
+      center: center,
+      zoom: zoom,
+      resolutions: resolutions,
+      projection: projection,
+      extent: mapOptions['extent']
     })
   };
 
   this.map_ = new ol.Map(map_options);
+
+  if (zoomExtent) {
+    var view = this.map_.getView();
+    var size = this.map_.getSize();
+    view.fitExtent(zoomExtent, size);
+  }
 
   if (this.trackUri_) {
     this.setUriTracking_();
@@ -344,10 +530,12 @@ mapito.App.prototype.setMap_ = function(mapOptions, projection) {
  * @private
  */
 mapito.App.prototype.setUriTracking_ = function() {
-  var parser = this.uriParser_;
   var view = this.map_.getView();
   this.map_.on('moveend', function(evt) {
-    parser.propagateViewChange(view);
+    var center = view.getCenter();
+    var zoom = view.getZoom();
+    var projection = view.getProjection();
+    mapito.uri.propagateViewChange(center, zoom, projection);
   });
 
 };
@@ -379,21 +567,50 @@ mapito.App.prototype.getProjectionGGG_ = function(projStr) {
 
 
 /**
- * @param {!number} baseResolution
- * @param {!number} resolutionsLevels
+ * @param {number=} opt_baseResolution
+ * @param {number=} opt_resolutionsLevels
  * @return {Array.<number>}
  * @private
  */
 mapito.App.prototype.getResolutions_ =
-    function(baseResolution, resolutionsLevels) {
+    function(opt_baseResolution, opt_resolutionsLevels) {
   var resolutions = [];
-  if (goog.isNumber(baseResolution) && goog.isNumber(resolutionsLevels)) {
-    for (var i = 0; i <= resolutionsLevels; i++) {
-      var resolution = baseResolution / Math.pow(2, i);
-      resolutions.push(resolution);
-    }
+  var base = goog.isNumber(opt_baseResolution) ? opt_baseResolution :
+      mapito.DefaultOptions['map']['baseResolution'];
+  var levels = goog.isNumber(opt_resolutionsLevels) ? opt_resolutionsLevels :
+      mapito.DefaultOptions['map']['resolutionsLevels'];
+
+  for (var i = 0; i <= levels; i++) {
+    var resolution = base / Math.pow(2, i);
+    resolutions.push(resolution);
   }
+
   return resolutions;
+};
+
+
+/**
+ * @param {ol.layer.Baase} layer
+ * @private
+ */
+mapito.App.prototype.postLayerAddHandler_ = function(layer) {
+  //var source = layer.getSource();
+  var type = layer.get('layerType_');
+  //var layerSpecs;
+  switch (type) {
+    case 'geojson':
+      //layerSpecs = layer.get('layerSpecs_');
+      mapito.layer.geojson.loadLayer(layer).then(function() {
+
+        var event = {
+          'eventType': mapito.layer.Events.LAYERLOADEND,
+          'layer': layer
+        };
+
+        this.dispatchEvent_(event);},null, this);
+      break;
+  }
+
 };
 
 
@@ -407,6 +624,7 @@ mapito.App.prototype.setLayers_ = function(layersOptions) {
   goog.array.forEach(layers, function(layer) {
     this.setLayerListeners_(layer);
     this.map_.addLayer(layer);
+    this.postLayerAddHandler_(layer);
   },this);
 
 };
@@ -417,18 +635,28 @@ mapito.App.prototype.setLayers_ = function(layersOptions) {
  * @private
  */
 mapito.App.prototype.setLayerListeners_ = function(layer) {
-
   var source = layer.getSource();
 
   if (source instanceof ol.source.Vector) {
     this.beforeAddListenerFormatVector_(layer);
-
 
     this.listenersKey_.push(
         goog.events.listen(source, 'addfeature',
         this.handleAddFeature_, false, this)
     );
   }
+
+  var events = layer.get('events');
+
+  if (events) {
+    var layerInteractions = mapito.layer.getLayerInteractions(events);
+    goog.array.forEach(layerInteractions, function(interaction) {
+      interaction.set('layerId', layer.get('id'));
+      this.map_.addInteraction(interaction);
+      interaction.on('select', this.onselectEventHandler_, this);
+    },this);
+  }
+
 };
 
 
@@ -454,16 +682,52 @@ mapito.App.prototype.beforeAddListenerFormatVector_ = function(layer) {
  * @param {Event} evt
  * @private
  */
+mapito.App.prototype.onselectEventHandler_ = function(evt) {
+  var selected = evt.selected;
+  if (selected && selected.length > 0) {
+    var eventType = evt.target.get('eventType');
+    var layerId = evt.target.get('layerId');
+    var event = {
+      'eventType': eventType,
+      'features': selected,
+      'layerId': layerId
+    };
+    this.dispatchEvent_(event);
+  }
+
+};
+
+
+/**
+ * @param {Event} evt
+ * @private
+ */
 mapito.App.prototype.handleAddFeature_ = function(evt) {
   var feature = evt['feature'];
   var styleId = feature.get('styleId_');
-  if (goog.isDefAndNotNull(styleId)) {
-    var style = this.styles_[styleId];
-    if (goog.isDefAndNotNull(style)) {
-      feature.setStyle(style);
-    }
+  this.setFeatureStyle(feature, styleId);
+};
+
+
+/**
+ * @param {?Element} element
+ * @private
+ */
+mapito.App.prototype.renderMapTarget_ = function(element) {
+
+  if (!element) {
+    window['console']['error']('Wrong map element ID');
+    return;
   }
 
+  if (goog.isDefAndNotNull(element)) {
+    if (goog.isDefAndNotNull(window['React'])) {
+      var mapElement = React.createElement(templates.project());
+      React.render(mapElement, element);
+    }else {
+      goog.dom.appendChild(element, templates.project());
+    }
+  }
 };
 
 
@@ -473,3 +737,28 @@ mapito.App.prototype.handleAddFeature_ = function(evt) {
 mapito.App.Events = {
   PROJECT_SET: 'projectset'
 };
+
+goog.exportSymbol('mapito.App', mapito.App);
+
+
+/**
+ *
+ * Export OpenLayer
+ *
+ */
+goog.exportSymbol('ol.Collection', ol.Collection);
+goog.exportSymbol('ol.Feature', ol.Feature);
+goog.exportSymbol('ol.Feature.geometry', ol.Feature.geometry);
+
+goog.exportSymbol('ol.Geometry', ol.Geometry);
+
+
+goog.exportProperty(
+    ol.Feature.prototype,
+    'getStyle',
+    ol.Feature.prototype.getStyle);
+
+goog.exportProperty(
+    ol.Feature.prototype,
+    'setStyle',
+    ol.Feature.prototype.setStyle);

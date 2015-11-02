@@ -5,7 +5,7 @@ goog.require('ol.View');
 
 /**
  * @param {ol.Coordinate} coords
- * @param {ol.proj.Projection} srcProj
+ * @param {ol.proj.ProjectionLike} srcProj
  * @return {ol.Coordinate|undefined}
  */
 mapito.transform.coordsToWgs = function(coords, srcProj) {
@@ -22,7 +22,7 @@ mapito.transform.coordsToWgs = function(coords, srcProj) {
 
 /**
  * @param {ol.Coordinate} coords
- * @param {ol.proj.Projection} dstProj
+ * @param {ol.proj.ProjectionLike} dstProj
  * @return {ol.Coordinate|undefined}
  */
 mapito.transform.coordsWgsTo = function(coords, dstProj) {

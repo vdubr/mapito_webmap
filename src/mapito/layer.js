@@ -1,5 +1,9 @@
 goog.provide('mapito.layer');
+goog.provide('mapito.layer.Events');
+goog.provide('mapito.layer.LayerOptions');
 
+goog.require('goog.array');
+goog.require('goog.object');
 goog.require('mapito.layer.GEOJSONOptions');
 goog.require('mapito.layer.GeotifOptions');
 goog.require('mapito.layer.MARKERSOptions');
@@ -12,6 +16,17 @@ goog.require('mapito.layer.markers');
 goog.require('mapito.layer.osm');
 goog.require('mapito.layer.tiled');
 goog.require('mapito.layer.wms');
+goog.require('ol.events.condition');
+goog.require('ol.interaction.Select');
+
+
+/**
+ * @enum {string}
+ */
+mapito.layer.Events = {
+  FEATURECLICK: 'feature:click',
+  LAYERLOADEND: 'layer:loadEnd'
+};
 
 
 /**
@@ -34,9 +49,26 @@ mapito.layer.LayerOptions;
  *            alpha: (number|undefined),
  *            reload: (number|undefined),
  *            tags: (Array.<string>|undefined)
+ *            events: (mapito.layer.Events|undefined)
+ *            id: (number|string|undefined)
  *          }}
  */
 mapito.layer.Config;
+
+
+/**
+ * @enum {string}
+ */
+mapito.layer.ConfigEnum = {
+  TITILE: 'title',
+  BASELAYER: 'baselayer',
+  VISIBLE: 'visible',
+  ALPHA: 'alpha',
+  RELOAD: 'reload',
+  TAGS: 'tags',
+  EVENTED: 'events',
+  ID: 'id'
+};
 
 
 /**
@@ -89,9 +121,29 @@ mapito.layer.getLayer = function(layerOptions) {
   var properties = mapito.layer.getDefaultValues(layerConfig);
 
   layer.setProperties(properties);
+  layer.set('layerType_', layerType);
+  layer.set('layerSpecs_', layerSpecs);
+
   mapito.layer.setValues(layer);
 
   return layer;
+};
+
+
+/**
+ * @param {ol.layer.Base} layer
+ * @return {mapito.layer.LayerConfig}
+ */
+mapito.layer.getLayerConfig = function(layer) {
+
+  var layerConfig = {};
+  var value, keyVal;
+  goog.object.forEach(mapito.layer.ConfigEnum, function(keyVal) {
+    value = layer.get(keyVal);
+    layerConfig[keyVal] = value;
+  });
+
+  return layerConfig;
 };
 
 
@@ -156,19 +208,55 @@ mapito.layer.getDefaultValues = function(layerConfig) {
       layerConfig['tags']) ?
       layerConfig['tags'] : undefined;
 
+  var events = goog.isDef(
+      layerConfig['events']) ?
+      layerConfig['events'] : undefined;
+
+  var id = goog.isDef(
+      layerConfig['id']) ?
+      layerConfig['id'] : goog.getUid(layerConfig).toString();
+
   /**
- * @type {mapito.layer.Config}
- */
+   * @type {mapito.layer.Config}
+   */
   var properties = {
     title: title,
     baselayer: baselayer,
     visible: visible,
     alpha: alpha,
     reload: reload,
-    tags: tags
+    tags: tags,
+    'events': events,
+    id: id
   };
 
   return properties;
+};
+
+
+/**
+ * @param {mapito.layer.Events} events
+ * @return {Array.<ol.Interactions|undefined>}
+ */
+mapito.layer.getLayerInteractions = function(events) {
+  var interactions = [];
+  var interaction;
+  goog.array.forEach(events, function(event) {
+    switch (event) {
+      case mapito.layer.Events.FEATURECLICK:
+        interaction = new ol.interaction.Select({
+          condition: ol.events.condition.click
+        });
+        break;
+    }
+    if (interaction) {
+      interaction.set('eventType', mapito.layer.Events.FEATURECLICK);
+      interactions.push(interaction);
+    }
+  });
+
+
+  return interactions;
 };
 
 
