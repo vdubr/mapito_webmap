@@ -32,10 +32,10 @@ mapito.layer.Events = {
 /**
  * @typedef {{
  *            type:mapito.layer.LayerTypes,
- *            specs:{mapito.layer.OSMOptions|mapito.layer.GEOJSONOptions|
+ *            specs:(mapito.layer.OSMOptions|mapito.layer.GEOJSONOptions|
  *              mapito.layer.WMSOptions|mapito.layer.TiledOptions|
- *              mapito.layer.GEOTIFOptions|mapito.layer.MARKERSOptions},
- *            config:{mapito.layer.Config}
+ *              mapito.layer.GeotifOptions|mapito.layer.MARKERSOptions),
+ *            config:mapito.layer.LayerConfig
  *          }}
  */
 mapito.layer.LayerOptions;
@@ -43,17 +43,17 @@ mapito.layer.LayerOptions;
 
 /**
  * @typedef {{
- *            title: string,
- *            baselayer: boolean,
- *            visible: boolean,
+ *            title: (string|undefined),
+ *            baselayer: (boolean|undefined),
+ *            visible: (boolean|undefined),
  *            alpha: (number|undefined),
  *            reload: (number|undefined),
- *            tags: (Array.<string>|undefined)
- *            events: (mapito.layer.Events|undefined)
+ *            tags: (Array.<string>|undefined),
+ *            events: (Array.<mapito.layer.Events>|undefined),
  *            id: (number|string|undefined)
  *          }}
  */
-mapito.layer.Config;
+mapito.layer.LayerConfig;
 
 
 /**
@@ -73,7 +73,7 @@ mapito.layer.ConfigEnum = {
 
 /**
  * @param {mapito.layer.LayerOptions} layerOptions
- * @return {ol.layer.Base}
+ * @return {ol.layer.Layer}
  */
 mapito.layer.getLayer = function(layerOptions) {
   //FIXME set default layer properties
@@ -116,7 +116,6 @@ mapito.layer.getLayer = function(layerOptions) {
   }
   /**
   * @type {mapito.layer.LayerConfig}
-  * @expose
   */
   var properties = mapito.layer.getDefaultValues(layerConfig);
 
@@ -148,7 +147,7 @@ mapito.layer.getLayerConfig = function(layer) {
 
 
 /**
- * @param {ol.layer.Base} layer
+ * @param {ol.layer.Layer} layer
  */
 mapito.layer.setValues = function(layer) {
 
@@ -163,7 +162,7 @@ mapito.layer.setValues = function(layer) {
 
 
 /**
- * @param {ol.layer.Base} layer
+ * @param {ol.layer.Layer} layer
  */
 mapito.layer.setAlfa = function(layer) {
   window['console']['log']('setAlfa');
@@ -171,7 +170,7 @@ mapito.layer.setAlfa = function(layer) {
 
 
 /**
- * @param {ol.layer.Base} layer
+ * @param {ol.layer.Layer} layer
  */
 mapito.layer.setReload = function(layer) {
   window['console']['log']('setreload');
@@ -180,7 +179,7 @@ mapito.layer.setReload = function(layer) {
 
 /**
  * @param {mapito.layer.LayerConfig} layerConfig
- * @return {mapito.layer.Config}
+ * @return {mapito.layer.LayerConfig}
  */
 mapito.layer.getDefaultValues = function(layerConfig) {
   var title = goog.isDef(
@@ -217,7 +216,7 @@ mapito.layer.getDefaultValues = function(layerConfig) {
       layerConfig['id'] : goog.getUid(layerConfig).toString();
 
   /**
-   * @type {mapito.layer.Config}
+   * @type {mapito.layer.LayerConfig}
    */
   var properties = {
     title: title,
@@ -235,8 +234,8 @@ mapito.layer.getDefaultValues = function(layerConfig) {
 
 
 /**
- * @param {mapito.layer.Events} events
- * @return {Array.<ol.Interactions|undefined>}
+ * @param {Array.<mapito.layer.Events>} events
+ * @return {Array.<ol.interaction.Interaction>}
  */
 mapito.layer.getLayerInteractions = function(events) {
   var interactions = [];

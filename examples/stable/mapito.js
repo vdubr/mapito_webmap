@@ -1,5 +1,4 @@
 goog.require('mapito.App');
-goog.require('mapito.App.Events');
 goog.require('mapito.app.Options');
 goog.provide('mapito.start');
 

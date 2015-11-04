@@ -3,7 +3,6 @@ goog.provide('mapito.layer.geojson');
 
 goog.require('goog.Promise');
 goog.require('goog.net.XhrIo');
-goog.require('mapito.style.StyleOptions');
 goog.require('ol.format.GeoJSON');
 goog.require('ol.layer.Vector');
 goog.require('ol.source.Vector');
@@ -12,8 +11,8 @@ goog.require('ol.source.Vector');
 /**
  * @typedef {{
  *            path: string,
- *            sourceProjection: string,
- *            destinationProjection: string,
+ *            sourceProjection: ol.proj.ProjectionLike,
+ *            destinationProjection: ol.proj.ProjectionLike,
  *            styleId: number
  *           }}
  */
@@ -22,8 +21,8 @@ mapito.layer.GEOJSONOptions;
 
 /**
  * @param {string} path
- * @param {ol.Projection} sourceProjection
- * @param {ol.Projection} destinationProjection
+ * @param {ol.proj.ProjectionLike} sourceProjection
+ * @param {ol.proj.ProjectionLike} destinationProjection
  * @return {goog.Promise}
  * @private
  */
@@ -36,7 +35,7 @@ mapito.layer.geojson.loadGeojson_ = function(path, sourceProjection,
 
     goog.events.listen(xhr, goog.net.EventType.COMPLETE, function(evt) {
       var features = mapito.layer.geojson.onFeaturesLoadEnd_(
-          evt, sourceProjection, destinationProjection);
+          evt.target, sourceProjection, destinationProjection);
       resolve(features);
     });
     xhr.send(path);
@@ -48,23 +47,22 @@ mapito.layer.geojson.loadGeojson_ = function(path, sourceProjection,
 
 
 /**
- * @param {Event} evt
- * @param {ol.Projection} sourceProjection
- * @param {ol.Projection} destinationProjection
+ * @param {goog.events.EventTarget} respTarget
+ * @param {ol.proj.ProjectionLike} sourceProjection
+ * @param {ol.proj.ProjectionLike} destinationProjection
  * @return {Array.<ol.Feature>}
  * @private
  */
 mapito.layer.geojson.onFeaturesLoadEnd_ = function(
-    evt, sourceProjection, destinationProjection) {
-  var res = evt.target;
-  var obj = res.getResponseJson();
+    respTarget, sourceProjection, destinationProjection) {
+  var obj = respTarget.getResponseJson();
   var geojsonFormat = new ol.format.GeoJSON();
   //read and transform features
   var options = {
     dataProjection: sourceProjection,
     featureProjection: destinationProjection
   };
-  var features = geojsonFormat.readFeaturesFromObject(obj, options);
+  var features = geojsonFormat.readFeatures(obj, options);
   return features;
 };
 
@@ -86,7 +84,7 @@ mapito.layer.geojson.getGEOJSONLayer = function(GEOJSONOptions) {
 
 /**
  * @param {ol.layer.Vector} layer
- * @return {Promise}
+ * @return {goog.Promise}
  */
 mapito.layer.geojson.loadLayer = function(layer) {
   var source = layer.getSource();

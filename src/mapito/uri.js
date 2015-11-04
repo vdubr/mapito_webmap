@@ -4,14 +4,13 @@ goog.provide('mapito.uri.uriOptions');
 goog.require('goog.Uri');
 goog.require('mapito.app.ProjectOptions');
 goog.require('mapito.transform');
-goog.require('ol.Object');
 
 
 /**
- * @typedef {{x:{number|undefined},
- *            y:{number|undefined},
- *            z:{number|undefined},
- *            config:{string|mapito.app.ProjectOptions|undefined}
+ * @typedef {{x:(number|undefined),
+ *            y:(number|undefined),
+ *            z:(number|undefined),
+ *            config:(string|mapito.app.ProjectOptions|undefined)
  *           }}
  */
 mapito.uri.uriOptions;

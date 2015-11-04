@@ -3,30 +3,33 @@ goog.provide('mapito.style.StyleDefinition');
 goog.provide('mapito.style.StyleOptions');
 
 goog.require('mapito.icon.pin');
+goog.require('ol.style.Fill');
+goog.require('ol.style.Icon');
+goog.require('ol.style.Stroke');
 goog.require('ol.style.Style');
+goog.require('ol.style.Text');
 
 
 /**
  * @typedef {{id: number,
- *            def: {mapito.style.StyleDefinition}
- *            icon: {mapito.style.IconDefinition=}
+ *            def: mapito.style.StyleDefinition,
+ *            icon: (mapito.style.IconDefinition|undefined)
  *           }}
  */
 mapito.style.StyleOptions;
 
 
 /**
- * @typedef {{fill: {olx.style.FillOptions},
- *            image: {olx.style.IconOptions},
- *            stroke: {olx.style.StrokeOptions}
+ * @typedef {{fill: olx.style.FillOptions,
+ *            image: olx.style.IconOptions,
+ *            stroke: olx.style.StrokeOptions
  *           }}
  */
 mapito.style.StyleDefinition;
 
 
 /**
- * @typedef {{
- *           }}
+ * @typedef {Object}
  */
 mapito.style.IconDefinition;
 
@@ -56,7 +59,6 @@ mapito.style.getStyle = function(stylesOption) {
   // });
 
   if (goog.isDefAndNotNull(stylesOption)) {
-    var style;
     if (stylesOption['def']) {
       style = mapito.style.getStyleFromDefinition(stylesOption['def']);
     }else if (stylesOption['icon']) {
@@ -79,7 +81,8 @@ mapito.style.getStyle = function(stylesOption) {
       iconStyleDef.img = image;
 
       style = new ol.style.Style({
-        image: mapito.style.getImageStyle(iconStyleDef)
+        image: mapito.style.getImageStyle(
+            /** @type {!olx.style.IconOptions} */(iconStyleDef))
       });
     }
 
@@ -96,7 +99,7 @@ goog.exportProperty(
 
 /**
  * Return style function for given style definition
- * @param {mapito.style.styleDefinition} styleDefinition
+ * @param {mapito.style.StyleDefinition} styleDefinition
  * @return {ol.style.Style|undefined}
  */
 mapito.style.getStyleFromDefinition = function(styleDefinition) {
@@ -142,7 +145,7 @@ mapito.style.getFillStyle = function(options) {
 
 
 /**
- * @param {olx.style.ImageOptions|undefined} options
+ * @param {olx.style.IconOptions|undefined} options
  * @return {ol.style.Image|undefined}
  */
 mapito.style.getImageStyle = function(options) {

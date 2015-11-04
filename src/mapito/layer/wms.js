@@ -11,7 +11,7 @@ goog.require('ol.source.TileWMS');
  *            version: string,
  *            layers: string,
  *            tiled: boolean,
- *            extent: {ol.Extent|undefined}
+ *            extent: (ol.Extent|undefined)
  *           }}
  */
 mapito.layer.WMSOptions;

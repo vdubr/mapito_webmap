@@ -9,30 +9,30 @@ goog.require('mapito.style.StyleOptions');
 
 /**
  * @typedef {{
- *            projection:{{mapito.app.ProjOptions|mapito.app.KnownProjections}},
- *            map:{{mapito.app.MapOptions}},
- *            layers: Array.<{{mapito.layer.LayerOptions}}>,
- *            style: Array.<mapito.style.StyleOptions>,
- *            theme: {{mapito.Theme}}}}
+ *            projection:(mapito.app.ProjOptions|mapito.app.KnownProjections),
+ *            map:(mapito.app.MapOptions),
+ *            layers: Array.<(mapito.layer.LayerOptions)>,
+ *            style: (Array.<mapito.style.StyleOptions>|undefined),
+ *            theme: (mapito.Theme)}}
  */
 mapito.app.ProjectOptions;
 
 
 /**
- * @typedef {{init:{mapito.app.MapInit=},
- *            baseResolution:number=,
- *            resolutionsLevels:number=,
- *            useURIcenter:boolean=,
- *            extent: {ol.Extent=}
+ * @typedef {{init:(mapito.app.MapInit|undefined),
+ *            baseResolution:(number|undefined),
+ *            resolutionsLevels:(number|undefined),
+ *            useURIcenter:(boolean|undefined),
+ *            extent: (ol.Extent|undefined)
  *           }}
  */
 mapito.app.MapOptions;
 
 
 /**
- * @typedef {{center:{ol.Coordinate=},
- *            zoom:number=,
- *            extent:{ol.Extent=},
+ * @typedef {{center:(ol.Coordinate|undefined),
+ *            zoom:(number|undefined),
+ *            extent:(ol.Extent|undefined)
  *           }}
  */
 mapito.app.MapInit;
@@ -42,7 +42,7 @@ mapito.app.MapInit;
  * @typedef {{
  *            code:string,
  *            def:string,
- *            extent:{ol.Extent}
+ *            extent:(ol.Extent)
  *           }}
  */
 mapito.app.ProjOptions;
@@ -58,8 +58,7 @@ mapito.app.KnownProjections = {
 
 
 /**
- * @typedef {{
- *           }}
+ * @typedef {Object}
  */
 mapito.Theme;
 
@@ -68,9 +67,11 @@ mapito.Theme;
  * @type {mapito.app.ProjectOptions}
  */
 mapito.DefaultOptions = {
-  'projection': 'EPSG:3857',
-  'map': {
-    init: {
+  'projection':
+      /** @type {mapito.app.ProjOptions|mapito.app.KnownProjections} */(
+      'EPSG:3857'),
+  'map': /** @type {mapito.app.MapOptions} */({
+    'init': {
       'center': [1910872.8582313128, 6148369.483887095],
       'zoom': 5,
       'extent': undefined
@@ -78,8 +79,8 @@ mapito.DefaultOptions = {
     'baseResolution': 156543.03392804097,
     'resolutionsLevels': 21,
     'extent': undefined
-  },
-  'layers': [
+  }),
+  'layers': /** @type {Array.<(mapito.layer.LayerOptions)>}*/([
     {
       'type': 'osm',
       'config': {
@@ -88,8 +89,7 @@ mapito.DefaultOptions = {
         'visible': true
       }
     }
-  ],
-  'theme': {
-
-  }
+  ]),
+  'style': undefined,
+  'theme': /** @type {mapito.Theme}*/({})
 };

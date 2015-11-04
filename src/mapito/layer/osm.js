@@ -24,7 +24,7 @@ Confg example
 
 
 /**
- * @typedef {{}}
+ * @typedef {Object}
  */
 mapito.layer.OSMOptions;
 

@@ -1,16 +1,16 @@
 goog.provide('mapito.layer.GeotifOptions');
 goog.provide('mapito.layer.geotif');
 
-goog.require('ol.layer.Tile');
+goog.require('ol.layer.Image');
 goog.require('ol.source.ImageStatic');
 
 
 /**
  * @typedef {{
  *            url: string,
- *            projection:string,
+ *            projection:ol.proj.ProjectionLike,
  *            extent:ol.Extent,
- *            imageSize:imageSize
+ *            imageSize:ol.Size
  *           }}
  */
 mapito.layer.GeotifOptions;
@@ -18,7 +18,7 @@ mapito.layer.GeotifOptions;
 
 /**
  * @param {mapito.layer.GeotifOptions} GeotifOptions
- * @return {ol.layer.Tile}
+ * @return {ol.layer.Image}
  */
 mapito.layer.geotif.getGeotifLayer = function(GeotifOptions) {
   var url = GeotifOptions['url'];

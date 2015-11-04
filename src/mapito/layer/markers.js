@@ -3,6 +3,8 @@ goog.provide('mapito.layer.markers');
 
 goog.require('goog.Promise');
 goog.require('goog.net.XhrIo');
+goog.require('ol.Feature');
+goog.require('ol.geom.Point');
 goog.require('ol.layer.Vector');
 goog.require('ol.source.Vector');
 

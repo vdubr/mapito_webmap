@@ -2,6 +2,7 @@ goog.provide('mapito.layer.LocalimageOptions');
 goog.provide('mapito.layer.localimage');
 
 goog.require('ol.layer.Image');
+goog.require('ol.proj.Projection');
 goog.require('ol.source.ImageStatic');
 
 

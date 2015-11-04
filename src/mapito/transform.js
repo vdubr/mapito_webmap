@@ -1,7 +1,5 @@
 goog.provide('mapito.transform');
 
-goog.require('ol.View');
-
 
 /**
  * @param {ol.Coordinate} coords

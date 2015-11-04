@@ -1,18 +1,11 @@
-goog.provide('templates.project')
+goog.provide('templates.project');
 
 templates.project = function(){
   var template
   if (goog.isDefAndNotNull(window.React)) {
     template =  React.createClass({
       render: function() {
-        return (
-          <div className = {'mapito-project'}>
-            <div className = {'mapito-mapview'}>
-            </div>
-            <div className = {'mapito-dataview'}>
-            </div>
-          </div>
-        );
+        return ("<div className = {'mapito-project'}><div className = {'mapito-mapview'}></div><div className = {'mapito-dataview'}></div></div>");
       }
     });
   }else{
