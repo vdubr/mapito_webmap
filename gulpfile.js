@@ -62,7 +62,7 @@ gulp.task('webserver', function() {
     livereload: true,
     port: 7779,
     root: [__dirname, 'dist'],
-    fallback: 'examples/stable/index.html'
+    fallback: 'examples/index.html'
   });
 });
 
@@ -83,13 +83,13 @@ gulp.task('copy-files', function() {
 
   //data
   var data = gulp.src(
-    ['examples/stable/data/**/*']).pipe(gulp.dest('dist/data'));
+    ['examples/data/**/*']).pipe(gulp.dest('dist/data'));
 
   //html
-  var html = gulp.src(['examples/stable/index.html']).pipe(gulp.dest('dist/'));
+  var html = gulp.src(['examples/index.html']).pipe(gulp.dest('dist/'));
 
   //css
-  var css = gulp.src(['examples/stable/css/all.css']).pipe(gulp.dest('dist/css'));
+  var css = gulp.src(['examples/css/all.css']).pipe(gulp.dest('dist/css'));
   var cssBootstrap = gulp.src(['./node_modules/bootstrap/dist/css/bootstrap.min.css']).pipe(gulp.dest('dist/css'));
   var cssFontAwesome = gulp.src(['./node_modules/font-awesome/css/font-awesome.min.css']).pipe(gulp.dest('dist/css'));
   var cssOl = gulp.src([olPath + 'css/ol.css']).pipe(gulp.dest('dist/css'));
