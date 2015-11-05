@@ -107,6 +107,7 @@ mapito.App.prototype.trackUri_ = true;
 /**
  * @param {ol.style.Style} style
  * @param {number} styleId
+ * @api stable
  */
 mapito.App.prototype.addStyle = function(style, styleId) {
   var styleExists = this.getStyleById(styleId);
@@ -123,6 +124,7 @@ goog.exportProperty(
 /**
  * @param {number|string} layerId
  * @return {ol.layer.Layer|undefined}
+ * @api stable
  */
 mapito.App.prototype.getLayerById = function(layerId) {
   //get layer by id
@@ -747,6 +749,9 @@ mapito.App.prototype.renderMapTarget_ = function(element) {
  * @enum {string}
  */
 mapito.App.Events = {
+  /**
+   * @api stable
+   */
   PROJECT_SET: 'projectset'
 };
 

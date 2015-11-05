@@ -6,6 +6,7 @@ goog.require('ol.source.TileWMS');
 
 
 /**
+ * @api stable
  * @typedef {{
  *            url: string,
  *            version: string,
@@ -20,6 +21,7 @@ mapito.layer.WMSOptions;
 /**
  * @param {mapito.layer.WMSOptions} WMSOptions
  * @return {ol.layer.Tile}
+ * @api stable
  */
 mapito.layer.wms.getWMSLayer = function(WMSOptions) {
   var url = WMSOptions['url'];

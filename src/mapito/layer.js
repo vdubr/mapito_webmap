@@ -22,6 +22,7 @@ goog.require('ol.interaction.Select');
 
 /**
  * @enum {string}
+ * @api stable
  */
 mapito.layer.Events = {
   FEATURECLICK: 'feature:click',
@@ -30,6 +31,7 @@ mapito.layer.Events = {
 
 
 /**
+ * @api stable
  * @typedef {{
  *            type:mapito.layer.LayerTypes,
  *            specs:(mapito.layer.OSMOptions|mapito.layer.GEOJSONOptions|
@@ -42,6 +44,7 @@ mapito.layer.LayerOptions;
 
 
 /**
+ * @api stable
  * @typedef {{
  *            title: (string|undefined),
  *            baselayer: (boolean|undefined),
@@ -58,6 +61,7 @@ mapito.layer.LayerConfig;
 
 /**
  * @enum {string}
+ * @api stable
  */
 mapito.layer.ConfigEnum = {
   TITILE: 'title',
@@ -74,6 +78,7 @@ mapito.layer.ConfigEnum = {
 /**
  * @param {mapito.layer.LayerOptions} layerOptions
  * @return {ol.layer.Layer}
+ * @api stable
  */
 mapito.layer.getLayer = function(layerOptions) {
   //FIXME set default layer properties
@@ -132,6 +137,7 @@ mapito.layer.getLayer = function(layerOptions) {
 /**
  * @param {ol.layer.Base} layer
  * @return {mapito.layer.LayerConfig}
+ * @api stable
  */
 mapito.layer.getLayerConfig = function(layer) {
 
@@ -148,6 +154,7 @@ mapito.layer.getLayerConfig = function(layer) {
 
 /**
  * @param {ol.layer.Layer} layer
+ * @api stable
  */
 mapito.layer.setValues = function(layer) {
 
@@ -180,6 +187,7 @@ mapito.layer.setReload = function(layer) {
 /**
  * @param {mapito.layer.LayerConfig} layerConfig
  * @return {mapito.layer.LayerConfig}
+ * @api stable
  */
 mapito.layer.getDefaultValues = function(layerConfig) {
   var title = goog.isDef(
@@ -261,6 +269,7 @@ mapito.layer.getLayerInteractions = function(events) {
 
 /**
  * @enum {string}
+ * @api stable
  */
 mapito.layer.LayerTypes = {
   OSM: 'osm',

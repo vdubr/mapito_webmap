@@ -1,13 +1,23 @@
 /**
  * TASKS
  *
- *  default
- *  build
- *  lint
- *  --advanced || --simple (default advanced)
+ *  default - [build, watch, serve]
+ *            start webserver on port 7779
+ *  build - build lib to dist folder with test data
+ *
+ *  DEVELOPMENT
+ *
+ *  buildLib - build lib to build folder, copy only nesescary files
+ *             compile also debug version
+ *  lint - fix and check js style
+ *
+ *  --advanced || --simple (default advanced compilation level)
  *
  *  1) npm install
  *  2) cd openlayers make install, make build
+ *
+ *  BUILDDOC
+ *  ./node_modules/openlayers/node_modules/.bin/jsdoc config/jsdoc/api/index.md -c config/jsdoc/api/conf.json -d dist/apidoc
  */
 
 
@@ -33,7 +43,7 @@ compilationLevel = (argv.simple === undefined) ? compilationLevel : 'SIMPLE';
 
 var target = 'dist';
 var isBuildLib = false;
-
+var debug = false;
 
 var olBuild = require(olPath + 'tasks/build');
 
@@ -47,13 +57,17 @@ var cssPaths = [
  ];
 
 gulp.task('compile', function(cb) {
+  var output = 'mapito.js'
+  if(debug){
+    output = 'mapito-debug.js'
+  }
 
   var onBuildDone = function(err, lib) {
     if (err) {
       console.log(err);
     }
 
-    fs.writeFile('./'+target+'/mapito.js', lib, function() {
+    fs.writeFile('./' + target + '/' + output, lib, function() {
       connect.reload();
       cb();
     });
@@ -117,20 +131,29 @@ gulp.task('copyData', function() {
 
   //data
   var data = gulp.src(
-    ['examples/data/**/*']).pipe(gulp.dest(target+'/data'));
+    ['node_modules/mapito_projects_examples/data/**/*']).pipe(gulp.dest(target+'/data'));
 
   return merge(data);
 });
 
 gulp.task('setBuildLib', function(cb) {
+  compilationLevel = 'ADVANCED';
   isBuildLib = true;
   target = 'build'
   cb()
 });
 
+gulp.task('setDebugBuildLib', function(cb) {
+  compilationLevel = 'SIMPLE';
+  isBuildLib = true;
+  target = 'build'
+  debug = true
+  cb()
+});
+
 gulp.task('copy', gulpsync.sync(['deleteTarget', 'copyDeps','copyData']));
 
-gulp.task('buildLib', gulpsync.sync(['setBuildLib', 'build']));
+gulp.task('buildLib', gulpsync.sync(['setBuildLib', 'copy', 'compile', 'setDebugBuildLib', 'compile']));
 
 gulp.task('build', gulpsync.sync(['copy', 'compile']));
 
