@@ -1,6 +1,6 @@
 {
   "name": "mapito-webmap",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "authors": [
     "Vojtech Dubrovsky <vdubr@icloud.com>"
   ],
@@ -42,7 +42,8 @@
     "react-tools": "^0.11.0",
     "run-sequence": "^1.1.4",
     "temp": "^0.8.1",
-    "walk": "^2.3.9"
+    "walk": "^2.3.9",
+    "yargs": "^3.29.0"
   },
   "repository": {
     "type": "git",

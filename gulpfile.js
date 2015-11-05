@@ -4,6 +4,7 @@
  *  default
  *  build
  *  lint
+ *  --advanced || --simple (default advanced)
  *
  *  1) npm install
  *  2) cd openlayers make install, make build
@@ -24,6 +25,15 @@ var runSequence = require('run-sequence');
 var glob = require('glob');
 var minifyCSS = require('gulp-minify-css');
 var concat = require('gulp-concat');
+var argv = require('yargs').argv;
+
+var compilationLevel = 'ADVANCED'
+compilationLevel = (argv.advanced === undefined) ? compilationLevel : 'ADVANCED';
+compilationLevel = (argv.simple === undefined) ? compilationLevel : 'SIMPLE';
+
+var target = 'dist';
+var isBuildLib = false;
+
 
 var olBuild = require(olPath + 'tasks/build');
 
@@ -36,25 +46,25 @@ var cssPaths = [
     './css/font_roboto.css'
  ];
 
-gulp.task('buildAdvanced', function(cb) {
+gulp.task('compile', function(cb) {
 
   var onBuildDone = function(err, lib) {
     if (err) {
       console.log(err);
     }
 
-    fs.writeFile('./dist/mapito.js', lib, function() {
+    fs.writeFile('./'+target+'/mapito.js', lib, function() {
       connect.reload();
-      console.log('asas');
       cb();
     });
   };
 
   var onReadDone = function(err, cfg) {
+    cfg.compile.compilation_level = compilationLevel
     olBuild(cfg, onBuildDone);
   };
 
-  readConfig('./config/mapito_advanced.json', onReadDone);
+  readConfig('./config/mapito.json', onReadDone);
 });
 
 gulp.task('webserver', function() {
@@ -69,44 +79,60 @@ gulp.task('webserver', function() {
 gulp.task('watch', function() {
 
   //JS
-  gulp.watch(['src/**/*.js'], ['buildAdvanced']);
+  gulp.watch(['src/**/*.js'], ['compile']);
 
   //index
-  gulp.watch(['examples/**/*'], ['buildAdvanced']);
+  gulp.watch(['examples/**/*'], ['compile']);
 });
 
-gulp.task('deleteDist', function(cb) {
-  return del(['dist/**/*'], cb);
+gulp.task('deleteTarget', function(cb) {
+  return del([target + '/**/*'], cb);
 });
 
-gulp.task('copy-files', function() {
+gulp.task('copyDeps', function() {
+
+  //html
+  var html = gulp.src(['examples/index.html']).pipe(gulp.dest(target+'/'));
+
+  //css
+  var css = gulp.src(['examples/css/all.css']).pipe(gulp.dest(target+'/css'));
+  var cssBootstrap = gulp.src(['./node_modules/bootstrap/dist/css/bootstrap.min.css']).pipe(gulp.dest(target+'/css'));
+  var cssFontAwesome = gulp.src(['./node_modules/font-awesome/css/font-awesome.min.css']).pipe(gulp.dest(target+'/css'));
+  var cssOl = gulp.src([olPath + 'css/ol.css']).pipe(gulp.dest(target+'/css'));
+  var cssMapito = gulp.src(['./css/mapito.css']).pipe(gulp.dest(target+'/css'));
+
+  //proj4
+  var jsProj = gulp.src(['./node_modules/proj4/dist/proj4.js']).pipe(gulp.dest(target+'/js'));
+
+  //reactJS
+  var jsReact = gulp.src(['./node_modules/react/dist/react.min.js']).pipe(gulp.dest(target+'/js'));
+
+  return merge(css, cssBootstrap, cssFontAwesome, cssOl, cssMapito, html, jsProj, jsReact);
+});
+
+gulp.task('copyData', function() {
+  if(isBuildLib){
+    return
+  }
 
   //data
   var data = gulp.src(
-    ['examples/data/**/*']).pipe(gulp.dest('dist/data'));
+    ['examples/data/**/*']).pipe(gulp.dest(target+'/data'));
 
-  //html
-  var html = gulp.src(['examples/index.html']).pipe(gulp.dest('dist/'));
-
-  //css
-  var css = gulp.src(['examples/css/all.css']).pipe(gulp.dest('dist/css'));
-  var cssBootstrap = gulp.src(['./node_modules/bootstrap/dist/css/bootstrap.min.css']).pipe(gulp.dest('dist/css'));
-  var cssFontAwesome = gulp.src(['./node_modules/font-awesome/css/font-awesome.min.css']).pipe(gulp.dest('dist/css'));
-  var cssOl = gulp.src([olPath + 'css/ol.css']).pipe(gulp.dest('dist/css'));
-  var cssMapito = gulp.src(['./css/mapito.css']).pipe(gulp.dest('dist/css'));
-
-  //proj4
-  var jsProj = gulp.src(['./node_modules/proj4/dist/proj4.js']).pipe(gulp.dest('dist/js'));
-
-  //reactJS
-  var jsReact = gulp.src(['./node_modules/react/dist/react.min.js']).pipe(gulp.dest('dist/js'));
-
-  return merge(css, cssBootstrap, cssFontAwesome, cssOl, cssMapito, data, html, jsProj, jsReact);
+  return merge(data);
 });
 
-gulp.task('copy', gulpsync.sync(['deleteDist', 'copy-files']));
+gulp.task('setBuildLib', function(cb) {
+  isBuildLib = true;
+  target = 'build'
+  cb()
+});
 
-gulp.task('build', gulpsync.sync(['copy', 'buildAdvanced']));
+gulp.task('copy', gulpsync.sync(['deleteTarget', 'copyDeps','copyData']));
+
+gulp.task('buildLib', gulpsync.sync(['setBuildLib', 'build']));
+
+gulp.task('build', gulpsync.sync(['copy', 'compile']));
 
 gulp.task('default', gulpsync.sync(['build', 'watch', 'webserver']), function(cb) {
 });

@@ -41,7 +41,6 @@ mapito.app.Options;
  * @api stable
  */
 mapito.App = function() {
-  this.test = 'kakaka';
   this.listenersKey_ = [];
 
   this.projectOptions_ = mapito.DefaultOptions;
@@ -299,13 +298,21 @@ mapito.App.prototype.getProjectOptions_ = function(path) {
   var urlPath = path + '.json';
 
   var optionsGetter = new goog.Promise(function(resolve, reject) {
+
     var xhr = new goog.net.XhrIo();
+
     goog.events.listen(xhr, goog.net.EventType.COMPLETE, function(evt) {
+
       var res = evt.target;
-      var obj = res.getResponseJson();
+      var obj;
+      if (res.getLastErrorCode() === goog.net.ErrorCode.HTTP_ERROR) {
+        obj = mapito.DefaultOptions;
+      }else {
+        obj = res.getResponseJson();
+      }
       resolve(obj);
     }, false, this);
-    window['console']['log'](urlPath);
+
     xhr.send(urlPath);
   });
   return optionsGetter;

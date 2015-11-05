@@ -1,7 +1,11 @@
   {
-    "exports": [],
+    "exports": [
+      "ol.Feature#get",
+      "ol.Feature#set",
+      "ol.Feature#getGeometry"
+    ],
     "src": [
-      "../../examples/stable/mapito.js",
+      "../../examples/mapito.js",
       "src/**/*.js",
       "build/ol.ext/*.js",
       "../../src/templates/**/*.js",
@@ -39,7 +43,6 @@
       "extra_annotation_name": [
         "api", "observable"
       ],
-      "compilation_level": "SIMPLE",
       "closure_entry_point":"mapito.start",
       "warning_level": "VERBOSE",
       "use_types_for_optimization": true,
