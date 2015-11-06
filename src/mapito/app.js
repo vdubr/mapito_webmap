@@ -232,8 +232,9 @@ mapito.App.prototype.setOptions = function(options, callback) {
     var getProjectOptions = this.getProjectOptions_(options['path']);
     getProjectOptions.then(this.setProjectOptions_, null, this).then(callback);
   } else {
-    callback();
-    this.dispatchEvent_({'type': mapito.App.Events.PROJECT_SET});
+    this.setProjectOptions_(mapito.DefaultOptions).then(callback);
+    // callback();
+    // this.dispatchEvent_({'type': mapito.App.Events.PROJECT_SET});
   }
 
 
