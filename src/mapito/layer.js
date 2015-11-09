@@ -1,6 +1,7 @@
 goog.provide('mapito.layer');
 goog.provide('mapito.layer.Events');
 goog.provide('mapito.layer.LayerOptions');
+goog.provide('mapito.layer.LayerTypes');
 
 goog.require('goog.array');
 goog.require('goog.object');
@@ -8,6 +9,7 @@ goog.require('mapito.layer.GEOJSONOptions');
 goog.require('mapito.layer.GeotifOptions');
 goog.require('mapito.layer.MARKERSOptions');
 goog.require('mapito.layer.OSMOptions');
+goog.require('mapito.layer.TOPOJSONOptions');
 goog.require('mapito.layer.TiledOptions');
 goog.require('mapito.layer.geojson');
 goog.require('mapito.layer.geotif');
@@ -15,6 +17,7 @@ goog.require('mapito.layer.localimage');
 goog.require('mapito.layer.markers');
 goog.require('mapito.layer.osm');
 goog.require('mapito.layer.tiled');
+goog.require('mapito.layer.topojson');
 goog.require('mapito.layer.wms');
 goog.require('ol.events.condition');
 goog.require('ol.interaction.Select');
@@ -36,7 +39,8 @@ mapito.layer.Events = {
  *            type:mapito.layer.LayerTypes,
  *            specs:(mapito.layer.OSMOptions|mapito.layer.GEOJSONOptions|
  *              mapito.layer.WMSOptions|mapito.layer.TiledOptions|
- *              mapito.layer.GeotifOptions|mapito.layer.MARKERSOptions),
+ *              mapito.layer.GeotifOptions|mapito.layer.MARKERSOptions|
+ *              mapito.layer.TOPOJSONOptions),
  *            config:mapito.layer.LayerConfig
  *          }}
  */
@@ -77,7 +81,7 @@ mapito.layer.ConfigEnum = {
 
 /**
  * @param {mapito.layer.LayerOptions} layerOptions
- * @return {ol.layer.Layer}
+ * @return {ol.layer.Layer|undefined}
  * @api stable
  */
 mapito.layer.getLayer = function(layerOptions) {
@@ -96,6 +100,10 @@ mapito.layer.getLayer = function(layerOptions) {
     case mapito.layer.LayerTypes.GEOJSON:
       layer = mapito.layer.geojson.getGEOJSONLayer(
           /**@type {mapito.layer.GEOJSONOptions}*/(layerSpecs));
+      break;
+    case mapito.layer.LayerTypes.TOPOJSON:
+      layer = mapito.layer.topojson.getTOPOJSONLayer(
+          /**@type {mapito.layer.TOPOJSONOptions}*/(layerSpecs));
       break;
     case mapito.layer.LayerTypes.MARKERS:
       layer = mapito.layer.markers.getMARKERSLayer(
@@ -119,18 +127,25 @@ mapito.layer.getLayer = function(layerOptions) {
       break;
 
   }
-  /**
-  * @type {mapito.layer.LayerConfig}
-  */
-  var properties = mapito.layer.getDefaultValues(layerConfig);
 
-  layer.setProperties(properties);
-  layer.set('layerType_', layerType);
-  layer.set('layerSpecs_', layerSpecs);
 
-  mapito.layer.setValues(layer);
+  if (layer) {
+    /**
+    * @type {mapito.layer.LayerConfig}
+    */
+    var properties = mapito.layer.getDefaultValues(layerConfig);
 
-  return layer;
+    layer.setProperties(properties);
+    layer.set('layerType_', layerType);
+    layer.set('layerSpecs_', layerSpecs);
+
+    mapito.layer.setValues(layer);
+
+    return layer;
+  }else {
+    window['console']['log']('layer is not defined for config: ', layerConfig);
+    return undefined;
+  }
 };
 
 
@@ -274,6 +289,7 @@ mapito.layer.getLayerInteractions = function(events) {
 mapito.layer.LayerTypes = {
   OSM: 'osm',
   GEOJSON: 'geojson',
+  TOPOJSON: 'topojson',
   WMS: 'wms',
   TILED: 'tiled',
   GEOTIF: 'geotif',

@@ -10,6 +10,9 @@ goog.require('mapito.DefaultOptions');
 goog.require('mapito.layer');
 goog.require('mapito.layer.Events');
 goog.require('mapito.layer.LayerOptions');
+goog.require('mapito.layer.LayerTypes');
+goog.require('mapito.layer.geojson');
+goog.require('mapito.layer.topojson');
 goog.require('mapito.style');
 goog.require('mapito.style.StyleOptions');
 goog.require('mapito.transform');
@@ -609,13 +612,21 @@ mapito.App.prototype.getResolutions_ =
  * @private
  */
 mapito.App.prototype.postLayerAddHandler_ = function(layer) {
-  //var source = layer.getSource();
   var type = layer.get('layerType_');
-  //var layerSpecs;
   switch (type) {
-    case 'geojson':
-      //layerSpecs = layer.get('layerSpecs_');
+    case mapito.layer.LayerTypes.GEOJSON:
       mapito.layer.geojson.loadLayer(
+          /** @type {ol.layer.Vector}*/(layer)).then(function() {
+
+        var event = {
+          'eventType': mapito.layer.Events.LAYERLOADEND,
+          'layer': layer
+        };
+
+        this.dispatchEvent_(event);},null, this);
+      break;
+    case mapito.layer.LayerTypes.TOPOJSON:
+      mapito.layer.topojson.loadLayer(
           /** @type {ol.layer.Vector}*/(layer)).then(function() {
 
         var event = {
@@ -638,9 +649,11 @@ mapito.App.prototype.setLayers_ = function(layersOptions) {
   var layers = goog.array.map(layersOptions, mapito.layer.getLayer);
 
   goog.array.forEach(layers, function(layer) {
-    this.setLayerListeners_(layer);
-    this.map_.addLayer(layer);
-    this.postLayerAddHandler_(layer);
+    if (layer) {
+      this.setLayerListeners_(layer);
+      this.map_.addLayer(layer);
+      this.postLayerAddHandler_(layer);
+    }
   },this);
 
 };
@@ -654,7 +667,6 @@ mapito.App.prototype.setLayerListeners_ = function(layer) {
   var source = layer.getSource();
 
   if (source instanceof ol.source.Vector) {
-    this.beforeAddListenerFormatVector_(/** @type {ol.layer.Vector}*/(layer));
 
     this.listenersKey_.push(
         goog.events.listen(source, 'addfeature',
@@ -669,27 +681,13 @@ mapito.App.prototype.setLayerListeners_ = function(layer) {
     goog.array.forEach(layerInteractions, function(interaction) {
       interaction.set('layerId', layer.get('id'));
       this.map_.addInteraction(interaction);
+
+
+      //switch
       interaction.on('select', this.onselectEventHandler_, this);
     },this);
   }
 
-};
-
-
-/**
- * @param {ol.layer.Vector} layer
- * @private
- */
-mapito.App.prototype.beforeAddListenerFormatVector_ = function(layer) {
-  var source = layer.getSource();
-  var features = source.getFeatures();
-  goog.array.forEach(features, function(feature) {
-    var styleId = feature.get('styleId_');
-    if (goog.isDefAndNotNull(styleId)) {
-      // var style = mapito.style.getStyle(this.styles_, styleId);
-    }
-
-  },this);
 };
 
 
