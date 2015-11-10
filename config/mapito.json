@@ -1,8 +1,6 @@
   {
     "exports": [
-      "ol.Feature#get",
-      "ol.Feature#set",
-      "ol.Feature#getGeometry"
+      "ol.Feature*"
     ],
     "src": [
       "../../examples/mapito.js",
