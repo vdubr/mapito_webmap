@@ -1,6 +1,7 @@
 goog.provide('mapito.DefaultOptions');
 goog.provide('mapito.app.MapOptions');
 goog.provide('mapito.app.ProjectOptions');
+goog.provide('mapito.map.Events');
 goog.provide('mapito.mapito.Theme');
 
 goog.require('mapito.layer.LayerOptions');
@@ -23,7 +24,8 @@ mapito.app.ProjectOptions;
  *            baseResolution:(number|undefined),
  *            resolutionsLevels:(number|undefined),
  *            useURIcenter:(boolean|undefined),
- *            extent: (ol.Extent|undefined)
+ *            extent: (ol.Extent|undefined),
+ *            events: (Array.<mapito.map.Events>|undefined)
  *           }}
  */
 mapito.app.MapOptions;
@@ -46,6 +48,14 @@ mapito.app.MapInit;
  *           }}
  */
 mapito.app.ProjOptions;
+
+
+/**
+ * @enum {string}
+ */
+mapito.map.Events = {
+  MAPCLICK: 'map:click'
+};
 
 
 /**

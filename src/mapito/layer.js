@@ -3,7 +3,6 @@ goog.provide('mapito.layer.Events');
 goog.provide('mapito.layer.LayerOptions');
 goog.provide('mapito.layer.LayerTypes');
 
-goog.require('goog.array');
 goog.require('goog.object');
 goog.require('mapito.layer.GEOJSONOptions');
 goog.require('mapito.layer.GeotifOptions');
@@ -19,8 +18,6 @@ goog.require('mapito.layer.osm');
 goog.require('mapito.layer.tiled');
 goog.require('mapito.layer.topojson');
 goog.require('mapito.layer.wms');
-goog.require('ol.events.condition');
-goog.require('ol.interaction.Select');
 
 
 /**
@@ -260,26 +257,6 @@ mapito.layer.getDefaultValues = function(layerConfig) {
  * @param {Array.<mapito.layer.Events>} events
  * @return {Array.<ol.interaction.Interaction>}
  */
-mapito.layer.getLayerInteractions = function(events) {
-  var interactions = [];
-  var interaction;
-  goog.array.forEach(events, function(event) {
-    switch (event) {
-      case mapito.layer.Events.FEATURECLICK:
-        interaction = new ol.interaction.Select({
-          condition: ol.events.condition.click
-        });
-        break;
-    }
-    if (interaction) {
-      interaction.set('eventType', mapito.layer.Events.FEATURECLICK);
-      interactions.push(interaction);
-    }
-  });
-
-
-  return interactions;
-};
 
 
 /**

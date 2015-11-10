@@ -68,7 +68,9 @@ gulp.task('compile', function(cb) {
     }
 
     fs.writeFile('./' + target + '/' + output, lib, function() {
-      connect.reload();
+      gulp.src('./dist/index.html')
+        .pipe(connect.reload());
+
       cb();
     });
   };

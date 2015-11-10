@@ -13,16 +13,21 @@ goog.require('mapito.layer.LayerOptions');
 goog.require('mapito.layer.LayerTypes');
 goog.require('mapito.layer.geojson');
 goog.require('mapito.layer.topojson');
+goog.require('mapito.layerEvents');
+goog.require('mapito.map.Events');
 goog.require('mapito.style');
 goog.require('mapito.style.StyleOptions');
 goog.require('mapito.transform');
 goog.require('mapito.uri');
 goog.require('mapito.uri.uriOptions');
 goog.require('ol.Map');
+goog.require('ol.MapBrowserEvent.EventType');
+goog.require('ol.MapEventType');
 goog.require('ol.Object');
 goog.require('ol.View');
 goog.require('ol.proj.Projection');
 goog.require('ol.source.Vector');
+goog.require('ol.source.VectorEventType');
 goog.require('templates');
 goog.require('templates.project');
 
@@ -44,7 +49,6 @@ mapito.app.Options;
  * @api stable
  */
 mapito.App = function() {
-  this.listenersKey_ = [];
 
   this.projectOptions_ = mapito.DefaultOptions;
 
@@ -63,13 +67,6 @@ goog.inherits(mapito.App, ol.Object);
  * @private
  */
 mapito.App.prototype.eventListener_ = null;
-
-
-/**
- * @type {Array.<goog.events.Key>}
- * @private
- */
-mapito.App.prototype.listenersKey_ = null;
 
 
 /**
@@ -287,10 +284,8 @@ mapito.App.prototype.dispatchEvent_ = function(eventObject) {
   if (this.eventListener_) {
     this.eventListener_(eventObject);
   }
-
   goog.events.dispatchEvent(
       this, new goog.events.Event(eventObject['eventType']));
-
 };
 
 
@@ -539,6 +534,32 @@ mapito.App.prototype.setMap_ = function(mapOptions, projection) {
   if (this.trackUri_) {
     this.setUriTracking_();
   }
+
+  //set map listeners
+  this.setMapEvents_(mapOptions['events']);
+};
+
+
+/**
+ * @param {Array.<mapito.map.Events>|undefined} events
+ * @private
+ */
+mapito.App.prototype.setMapEvents_ = function(events) {
+  if (goog.isArray(events)) {
+    var handler;
+    goog.array.forEach(events, function(eventType) {
+      switch (eventType) {
+        case mapito.map.Events.MAPCLICK:
+          handler = mapito.mapEvents.getHandler(
+              mapito.map.Events.MAPCLICK, this.map_, this.dispatchEvent_, this);
+          if (handler) {
+            this.map_.on(
+                ol.MapBrowserEvent.EventType.SINGLECLICK, handler, this);
+          }
+          break;
+      }
+    },this);
+  }
 };
 
 
@@ -547,7 +568,7 @@ mapito.App.prototype.setMap_ = function(mapOptions, projection) {
  */
 mapito.App.prototype.setUriTracking_ = function() {
   var view = this.map_.getView();
-  this.map_.on('moveend', function(evt) {
+  this.map_.on(ol.MapEventType.MOVEEND, function(evt) {
     var center = view.getCenter() ||
         mapito.DefaultOptions['map']['init']['center'];
     var zoom = view.getZoom() || mapito.DefaultOptions['map']['init']['zoom'];
@@ -667,24 +688,26 @@ mapito.App.prototype.setLayerListeners_ = function(layer) {
   var source = layer.getSource();
 
   if (source instanceof ol.source.Vector) {
-
-    this.listenersKey_.push(
-        goog.events.listen(source, 'addfeature',
-        this.handleAddFeature_, false, this)
-    );
+    goog.events.listen(source, ol.source.VectorEventType.ADDFEATURE,
+        this.handleAddFeature_, false, this);
   }
 
   var events = layer.get('events');
 
   if (goog.isArray(events)) {
-    var layerInteractions = mapito.layer.getLayerInteractions(events);
-    goog.array.forEach(layerInteractions, function(interaction) {
-      interaction.set('layerId', layer.get('id'));
-      this.map_.addInteraction(interaction);
-
-
-      //switch
-      interaction.on('select', this.onselectEventHandler_, this);
+    var handler;
+    goog.array.forEach(events, function(eventType) {
+      switch (eventType) {
+        case mapito.layer.Events.FEATURECLICK:
+          handler = mapito.layerEvents.getHandler(
+              mapito.layer.Events.FEATURECLICK, this.map_, this.dispatchEvent_,
+              this, layer);
+          if (handler) {
+            this.map_.on(
+                ol.MapBrowserEvent.EventType.SINGLECLICK, handler, this);
+          }
+          break;
+      }
     },this);
   }
 
