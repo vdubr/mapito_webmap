@@ -378,8 +378,10 @@ mapito.App.prototype.startProject_ = function(projectOptions) {
 
   if (goog.isDefAndNotNull(uriOptions) &&
       goog.isDefAndNotNull(uriOptions['config'])) {
+        console.log("is set uri");
     this.setProjectFromUri_(uriOptions);
   }else if (goog.isDefAndNotNull(projectOptions)) {
+    console.log("uri not set");
     this.setProject_(projectOptions);
   }
 };
