@@ -299,27 +299,23 @@ mapito.App.prototype.getProjectOptions_ = function(path) {
 
     var xhr = new goog.net.XhrIo();
 
-    goog.events.listen(xhr, goog.net.EventType.ERROR, function(evt) {
-      if (path.indexOf('.json') > -1) {
-        reject();
-      } else {
-        mapito.App.prototype.getProjectOptions_(path + '.json')
-            .then(function(config) {
-              resolve(config);
-            });
-      }
-    }, false, this);
-
     goog.events.listen(xhr, goog.net.EventType.COMPLETE, function(evt) {
-
       var res = evt.target;
       var obj;
       if (res.getLastErrorCode() === goog.net.ErrorCode.HTTP_ERROR) {
-        obj = mapito.DefaultOptions;
+
+        if (path.indexOf('.json') > -1) {
+          obj = mapito.DefaultOptions;
+        } else {
+          mapito.App.prototype.getProjectOptions_(path + '.json')
+              .then(function(config) {
+                resolve(config);
+              });
+        }
       }else {
         obj = res.getResponseJson();
+        resolve(obj);
       }
-      resolve(obj);
     }, false, this);
 
     xhr.send(path);
@@ -378,10 +374,8 @@ mapito.App.prototype.startProject_ = function(projectOptions) {
 
   if (goog.isDefAndNotNull(uriOptions) &&
       goog.isDefAndNotNull(uriOptions['config'])) {
-        console.log("is set uri");
     this.setProjectFromUri_(uriOptions);
   }else if (goog.isDefAndNotNull(projectOptions)) {
-    console.log("uri not set");
     this.setProject_(projectOptions);
   }
 };
