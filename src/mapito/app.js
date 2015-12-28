@@ -295,12 +295,20 @@ mapito.App.prototype.dispatchEvent_ = function(eventObject) {
  * @private
  */
 mapito.App.prototype.getProjectOptions_ = function(path) {
-  //atention
-  var urlPath = path + '.json';
-
   var optionsGetter = new goog.Promise(function(resolve, reject) {
 
     var xhr = new goog.net.XhrIo();
+
+    goog.events.listen(xhr, goog.net.EventType.ERROR, function(evt) {
+      if (path.indexOf('.json') > -1) {
+        reject();
+      } else {
+        mapito.App.prototype.getProjectOptions_(path + '.json')
+            .then(function(config) {
+              resolve(config);
+            });
+      }
+    }, false, this);
 
     goog.events.listen(xhr, goog.net.EventType.COMPLETE, function(evt) {
 
@@ -314,7 +322,7 @@ mapito.App.prototype.getProjectOptions_ = function(path) {
       resolve(obj);
     }, false, this);
 
-    xhr.send(urlPath);
+    xhr.send(path);
   });
   return optionsGetter;
 };
