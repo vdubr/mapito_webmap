@@ -33,7 +33,7 @@ var fixjsstyle = require('closure-linter-wrapper').fixjsstyle;
 var gjslint = require('gulp-gjslint');
 var runSequence = require('run-sequence');
 var glob = require('glob');
-var minifyCSS = require('gulp-minify-css');
+var minifyCSS = require('gulp-clean-css');
 var concat = require('gulp-concat');
 var argv = require('yargs').argv;
 

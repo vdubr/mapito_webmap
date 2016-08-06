@@ -10,7 +10,7 @@ goog.require('ol.Map');
 /**
  * @param {mapito.map.Events} eventType
  * @param {ol.Map} map
- * @param {function(Object)} callback
+ * @param {function(string, Object=)} callback
  * @param {Object=} opt_this The object to use as `this` in `listener`.
  * @return {function(?)|undefined}
  */
@@ -31,7 +31,7 @@ mapito.mapEvents.getHandler = function(eventType, map, callback, opt_this) {
 /**
  * @param {mapito.map.Events} eventType
  * @param {ol.Map} map
- * @param {function(Object)} callback
+ * @param {function(string, Object=)} callback
  * @param {Object=} opt_this The object to use as `this` in `listener`.
  * @return {function(?): ?}
  */
@@ -41,11 +41,11 @@ mapito.mapEvents.mapClickHandler = function(
      * @param {?} evt
      */
   var handler = function(evt) {
+    var eventType = mapito.map.Events.MAPCLICK;
     var event = {
-      'eventType': mapito.map.Events.MAPCLICK,
       'target': evt
     };
-    callback.call(opt_this, event);
+    callback.call(opt_this, eventType, event);
 
   };
 
@@ -56,7 +56,7 @@ mapito.mapEvents.mapClickHandler = function(
 /**
  * @param {mapito.layer.Events} eventType
  * @param {ol.Map} map
- * @param {function(Object)} callback
+ * @param {function(string, Object=)} callback
  * @param {Object=} opt_this The object to use as `this` in `listener`.
  * @param {ol.layer.Base=} opt_layer
  * @return {function(?)|undefined}
@@ -79,7 +79,7 @@ mapito.layerEvents.getHandler = function(
 /**
  * @param {mapito.layer.Events} eventType
  * @param {ol.Map} map
- * @param {function(Object)} callback
+ * @param {function(string, Object=)} callback
  * @param {Object=} opt_this The object to use as `this` in `listener`.
  * @param {ol.layer.Base=} opt_layer Parent layer
  * @return {function(?): ?}
@@ -106,12 +106,12 @@ mapito.layerEvents.featureClickHandler = function(
     });
 
     if (features.length > 0) {
+      var eventType = mapito.layer.Events.FEATURECLICK;
       var dispEvt = {
-        'eventType': mapito.layer.Events.FEATURECLICK,
         'features': features,
         'layerId': parentLayerID
       };
-      callback.call(opt_this, dispEvt);
+      callback.call(opt_this, eventType, dispEvt);
     }
   };
 

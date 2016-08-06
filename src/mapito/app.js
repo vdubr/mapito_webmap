@@ -1,10 +1,10 @@
 goog.provide('mapito.App');
 goog.provide('mapito.App.Events');
+goog.provide('mapito.Event');
 goog.provide('mapito.app.Options');
 
 goog.require('goog.Promise');
 goog.require('goog.dom');
-goog.require('goog.events.Event');
 goog.require('goog.net.XhrIo');
 goog.require('mapito.DefaultOptions');
 goog.require('mapito.layer');
@@ -25,11 +25,31 @@ goog.require('ol.MapBrowserEvent.EventType');
 goog.require('ol.MapEventType');
 goog.require('ol.Object');
 goog.require('ol.View');
+goog.require('ol.events');
 goog.require('ol.proj.Projection');
 goog.require('ol.source.Vector');
 goog.require('ol.source.VectorEventType');
 goog.require('templates');
 goog.require('templates.project');
+
+
+
+/**
+ * @param {string} type The event type.
+ * @param {?Object} event Object contains event informations
+ * @constructor
+ * @extends {ol.events.Event}
+ */
+mapito.Event = function(type, event) {
+  ol.events.Event.call(this, type);
+
+  /**
+   * @type {?Object}
+   */
+  this.event = event;
+
+};
+goog.inherits(mapito.Event, ol.events.Event);
 
 
 /**
@@ -313,15 +333,18 @@ goog.exportProperty(
 
 
 /**
- * @param {Object} eventObject
+ * @param {string} type
+ * @param {Object=} opt_eventObject
  * @private
  */
-mapito.App.prototype.dispatchEvent_ = function(eventObject) {
+mapito.App.prototype.dispatchEvent_ = function(type, opt_eventObject) {
+  //call external listener
   if (this.eventListener_) {
-    this.eventListener_(eventObject);
+    this.eventListener_(type, opt_eventObject);
   }
-  goog.events.dispatchEvent(
-      this, new goog.events.Event(eventObject['eventType']));
+  //dispatch event on itself
+  var evtObj = opt_eventObject ? opt_eventObject : null;
+  this.dispatchEvent(new mapito.Event(type, evtObj));
 };
 
 
@@ -371,13 +394,11 @@ mapito.App.prototype.setProjectOptions_ = function(projectOptions) {
   // this.setLayersOptions_(projectOptions.layers)
   //this.setModulesOptions_(projectOptions.modules)
   var optionsSetter = new goog.Promise(function(resolve, reject) {
-
     this.projectOptions_ = projectOptions;
-
     resolve();
   }, this);
-
-  this.dispatchEvent_({'eventType': mapito.App.Events.PROJECT_SET});
+  var type = mapito.App.Events.PROJECT_SET;
+  this.dispatchEvent_(type);
   return optionsSetter;
 };
 
@@ -677,22 +698,24 @@ mapito.App.prototype.postLayerAddHandler_ = function(layer) {
       if (layer.get('layerSpecs_') && layer.get('layerSpecs_')['path']) {
         mapito.layer.geojson.loadLayer(
             /** @type {ol.layer.Vector}*/(layer)).then(function() {
+          var type = mapito.layer.Events.LAYERLOADEND;
           var event = {
-            'eventType': mapito.layer.Events.LAYERLOADEND,
             'layer': layer
           };
-          this.dispatchEvent_(event);},null, this);
+          this.dispatchEvent_(type, event);
+        },null, this);
       }
       break;
     case mapito.layer.LayerTypes.TOPOJSON:
       if (layer.get('layerSpecs_') && layer.get('layerSpecs_')['path']) {
         mapito.layer.topojson.loadLayer(
             /** @type {ol.layer.Vector}*/(layer)).then(function() {
+          var eventType = mapito.layer.Events.LAYERLOADEND;
           var event = {
-            'eventType': mapito.layer.Events.LAYERLOADEND,
             'layer': layer
           };
-          this.dispatchEvent_(event);},null, this);
+          this.dispatchEvent_(eventType, event);
+        },null, this);
       }
       break;
   }
@@ -726,8 +749,8 @@ mapito.App.prototype.setLayerListeners_ = function(layer) {
   var source = layer.getSource();
 
   if (source instanceof ol.source.Vector) {
-    goog.events.listen(source, ol.source.VectorEventType.ADDFEATURE,
-        this.handleAddFeature_, false, this);
+    ol.events.listen(source, ol.source.VectorEventType.ADDFEATURE,
+        this.handleAddFeature_, this, false);
   }
 
   var events = layer.get('events');
@@ -762,11 +785,10 @@ mapito.App.prototype.onselectEventHandler_ = function(evt) {
     var eventType = evt.target.get('eventType');
     var layerId = evt.target.get('layerId');
     var event = {
-      'eventType': eventType,
       'features': selected,
       'layerId': layerId
     };
-    this.dispatchEvent_(event);
+    this.dispatchEvent_(eventType, event);
   }
 
 };

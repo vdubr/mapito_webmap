@@ -3,8 +3,8 @@ goog.require('mapito.app.Options');
 goog.require('mapito.app.ProjectOptions');
 goog.provide('mapito.start');
 
-var eventListener = function(evt) {
-  window['console']['log']('something happend: ',evt);
+var eventListener = function(type, evt) {
+  window['console']['log']('something happend: ',type, evt);
 };
 
 var app = new mapito.App();
