@@ -171,6 +171,42 @@ goog.exportProperty(
 
 
 /**
+ * @return {Object}
+ */
+mapito.App.prototype.getView = function() {
+  var view = this.map_.getView();
+  var size = this.map_.getSize();
+  var extent = size ? view.calculateExtent(size) : null;
+  var properties = view.getProperties();
+  properties['extent'] = extent;
+  properties['zoom'] = view.getZoom();
+  properties['projection'] = view.getProjection();
+  return properties;
+};
+goog.exportProperty(
+    mapito.App.prototype,
+    'getView',
+    mapito.App.prototype.getView);
+
+
+/**
+ * @param {ol.Extent} extent
+ */
+mapito.App.prototype.zoomToExtent = function(extent) {
+  //TODO check if extent fit to restricted extent
+  if (extent) {
+    var view = this.map_.getView();
+    var size = this.map_.getSize();
+    view.fit(/** @type {ol.Extent}*/(extent), /** @type {ol.Size}*/(size));
+  }
+};
+goog.exportProperty(
+    mapito.App.prototype,
+    'zoomToExtent',
+    mapito.App.prototype.zoomToExtent);
+
+
+/**
  * @param {number|string} layerId
  * @return {Array.<ol.Feature>|undefined}
  */
@@ -530,9 +566,7 @@ mapito.App.prototype.setMap_ = function(mapOptions, projection) {
   this.map_ = new ol.Map(map_options);
 
   if (zoomExtent) {
-    var view = this.map_.getView();
-    var size = this.map_.getSize();
-    view.fit(/** @type {ol.Extent}*/(zoomExtent), /** @type {ol.Size}*/(size));
+    this.zoomToExtent(zoomExtent);
   }
 
   if (this.trackUri_) {
@@ -640,26 +674,26 @@ mapito.App.prototype.postLayerAddHandler_ = function(layer) {
   var type = layer.get('layerType_');
   switch (type) {
     case mapito.layer.LayerTypes.GEOJSON:
-      mapito.layer.geojson.loadLayer(
-          /** @type {ol.layer.Vector}*/(layer)).then(function() {
-
-        var event = {
-          'eventType': mapito.layer.Events.LAYERLOADEND,
-          'layer': layer
-        };
-
-        this.dispatchEvent_(event);},null, this);
+      if (layer.get('layerSpecs_') && layer.get('layerSpecs_')['path']) {
+        mapito.layer.geojson.loadLayer(
+            /** @type {ol.layer.Vector}*/(layer)).then(function() {
+          var event = {
+            'eventType': mapito.layer.Events.LAYERLOADEND,
+            'layer': layer
+          };
+          this.dispatchEvent_(event);},null, this);
+      }
       break;
     case mapito.layer.LayerTypes.TOPOJSON:
-      mapito.layer.topojson.loadLayer(
-          /** @type {ol.layer.Vector}*/(layer)).then(function() {
-
-        var event = {
-          'eventType': mapito.layer.Events.LAYERLOADEND,
-          'layer': layer
-        };
-
-        this.dispatchEvent_(event);},null, this);
+      if (layer.get('layerSpecs_') && layer.get('layerSpecs_')['path']) {
+        mapito.layer.topojson.loadLayer(
+            /** @type {ol.layer.Vector}*/(layer)).then(function() {
+          var event = {
+            'eventType': mapito.layer.Events.LAYERLOADEND,
+            'layer': layer
+          };
+          this.dispatchEvent_(event);},null, this);
+      }
       break;
   }
 
@@ -782,25 +816,3 @@ mapito.App.Events = {
 };
 
 goog.exportSymbol('mapito.App', mapito.App);
-
-
-/**
- *
- * Export OpenLayer
- *
- */
-goog.exportSymbol('ol.Collection', ol.Collection);
-goog.exportSymbol('ol.Feature', ol.Feature);
-goog.exportSymbol('ol.Feature.geometry', ol.Feature.geometry);
-
-goog.exportSymbol('ol.geom.Geometry', ol.geom.Geometry);
-
-goog.exportProperty(
-    ol.Feature.prototype,
-    'getStyle',
-    ol.Feature.prototype.getStyle);
-
-goog.exportProperty(
-    ol.Feature.prototype,
-    'setStyle',
-    ol.Feature.prototype.setStyle);

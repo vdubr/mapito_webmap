@@ -6,6 +6,7 @@ goog.require('ol.source.TileWMS');
 
 
 /**
+ * TODO add zoom restriction for all layers
  * @api stable
  * @typedef {{
  *            url: string,

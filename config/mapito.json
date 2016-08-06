@@ -1,6 +1,15 @@
   {
     "exports": [
-      "ol.Feature*"
+      "ol.Feature*",
+      "ol.Collection*",
+      "ol.geom.Geometry*",
+      "ol.geom.Point*",
+      "ol.geom.Polygon*",
+      "ol.geom.LineString*",
+      "ol.source.Vector#addFeatures",
+      "ol.source.Vector#addFeature",
+      "ol.layer.Layer#getSource",
+      "ol.layer.Layer#setVisible"
     ],
     "src": [
       "../../examples/mapito.js",

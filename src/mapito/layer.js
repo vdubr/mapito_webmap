@@ -147,6 +147,21 @@ mapito.layer.getLayer = function(layerOptions) {
 
 
 /**
+ * Get extent of features included in vector layer
+ * @param {ol.layer.Vector} layer
+ * @return {?ol.Extent}
+ * @api stable
+ */
+mapito.layer.getVectorExtent = function(layer) {
+  if (layer instanceof ol.layer.Vector) {
+    return layer.getSource().getExtent();
+  } else {
+    return null;
+  }
+};
+
+
+/**
  * @param {ol.layer.Base} layer
  * @return {mapito.layer.LayerConfig}
  * @api stable
@@ -273,3 +288,5 @@ mapito.layer.LayerTypes = {
   MARKERS: 'markers',
   LOCALIMAGE: 'localimage'
 };
+
+goog.exportSymbol('mapito.layer.getVectorExtent', mapito.layer.getVectorExtent);

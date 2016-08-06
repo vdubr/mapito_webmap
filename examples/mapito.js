@@ -7,6 +7,7 @@ var eventListener = function(evt) {
   window['console']['log']('something happend: ',evt);
 };
 
+var app = new mapito.App();
 
 /**
  * Start function
@@ -26,11 +27,8 @@ mapito.start = function(config, target) {
     localConfig['projectOptions'] = config;
   }
 
-  var app = new mapito.App();
-
   var onProjectLoaded = function() {
     app.init();
-    window['app'] = app;
     window['console']['log']('app is loaded');
   };
 
@@ -40,3 +38,4 @@ mapito.start = function(config, target) {
 };
 
 goog.exportSymbol('mapito.start', mapito.start);
+goog.exportSymbol('app', app);
