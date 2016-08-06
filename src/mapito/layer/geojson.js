@@ -11,8 +11,8 @@ goog.require('ol.source.Vector');
 /**
  * @typedef {{
  *            path: string,
- *            sourceProjection: ol.proj.ProjectionLike,
- *            destinationProjection: ol.proj.ProjectionLike,
+ *            sourceProjection: ol.ProjectionLike,
+ *            destinationProjection: ol.ProjectionLike,
  *            styleId: number
  *           }}
  */
@@ -21,8 +21,8 @@ mapito.layer.GEOJSONOptions;
 
 /**
  * @param {string} path
- * @param {ol.proj.ProjectionLike} sourceProjection
- * @param {ol.proj.ProjectionLike} destinationProjection
+ * @param {ol.ProjectionLike} sourceProjection
+ * @param {ol.ProjectionLike} destinationProjection
  * @return {goog.Promise}
  * @private
  */
@@ -48,8 +48,8 @@ mapito.layer.geojson.loadGeojson_ = function(path, sourceProjection,
 
 /**
  * @param {goog.events.EventTarget} respTarget
- * @param {ol.proj.ProjectionLike} sourceProjection
- * @param {ol.proj.ProjectionLike} destinationProjection
+ * @param {ol.ProjectionLike} sourceProjection
+ * @param {ol.ProjectionLike} destinationProjection
  * @return {Array.<ol.Feature>}
  * @private
  */

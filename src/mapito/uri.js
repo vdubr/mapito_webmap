@@ -105,7 +105,7 @@ mapito.uri.getSettings = function() {
 /**
  * @param {ol.Coordinate} center
  * @param {number} zoom
- * @param {ol.proj.ProjectionLike} projection
+ * @param {ol.ProjectionLike} projection
  */
 mapito.uri.propagateViewChange = function(center, zoom, projection) {
   var wgsCoords = mapito.transform.coordsToWgs(center, projection);

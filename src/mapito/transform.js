@@ -3,7 +3,7 @@ goog.provide('mapito.transform');
 
 /**
  * @param {ol.Coordinate} coords
- * @param {ol.proj.ProjectionLike} srcProj
+ * @param {ol.ProjectionLike} srcProj
  * @return {ol.Coordinate|undefined}
  */
 mapito.transform.coordsToWgs = function(coords, srcProj) {
@@ -20,7 +20,7 @@ mapito.transform.coordsToWgs = function(coords, srcProj) {
 
 /**
  * @param {ol.Coordinate} coords
- * @param {ol.proj.ProjectionLike} dstProj
+ * @param {ol.ProjectionLike} dstProj
  * @return {ol.Coordinate|undefined}
  */
 mapito.transform.coordsWgsTo = function(coords, dstProj) {

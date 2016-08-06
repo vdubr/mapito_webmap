@@ -1,23 +1,25 @@
-var fs = require('fs');
+var fs = require('fs-extra');
 var path = require('path');
 var spawn = require('child_process').spawn;
 
 var async = require('async');
-var fse = require('fs-extra');
 var walk = require('walk').walk;
 var isWindows = process.platform.indexOf('win') === 0;
 
 var sourceDir = path.join(__dirname, '..', 'src');
 var externsDir = path.join(__dirname, '..', 'externs');
 var externsPaths = [
-  path.join(externsDir, 'templates.js')
+  path.join(externsDir, 'olx.js'),
+  path.join(externsDir, 'geojson.js')
 ];
 var infoPath = path.join(__dirname, '..', 'build', 'info.json');
-var jsdoc = path.join(__dirname, '..', 'node_modules', '.bin', 'jsdoc');
+
+var jsdocResolved = require.resolve('jsdoc/jsdoc.js');
+var jsdoc = path.resolve(path.dirname(jsdocResolved), '../.bin/jsdoc');
 
 // on Windows, use jsdoc.cmd
 if (isWindows) {
- jsdoc += '.cmd';
+  jsdoc += '.cmd';
 }
 
 var jsdocConfig = path.join(
@@ -106,7 +108,7 @@ function getNewer(date, newer, callback) {
      * pass the sourceDir to the task so it can do the walking.
      */
     if (isWindows) {
-        paths = [sourceDir].concat(externsPaths);
+      paths = [sourceDir].concat(externsPaths);
     }
 
     callback(null, newer ? paths : []);
@@ -250,7 +252,7 @@ function addSymbolProvides(info, callback) {
 function writeInfo(info, callback) {
   if (info) {
     var str = JSON.stringify(info, null, '  ');
-    fse.outputFile(infoPath, str, callback);
+    fs.outputFile(infoPath, str, callback);
   } else {
     process.nextTick(function() {
       callback(null);

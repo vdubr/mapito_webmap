@@ -8,7 +8,7 @@ goog.require('ol.source.ImageStatic');
 /**
  * @typedef {{
  *            url: string,
- *            projection:ol.proj.ProjectionLike,
+ *            projection:ol.ProjectionLike,
  *            extent:ol.Extent,
  *            imageSize:ol.Size
  *           }}

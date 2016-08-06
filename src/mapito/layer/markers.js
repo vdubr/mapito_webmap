@@ -12,8 +12,8 @@ goog.require('ol.source.Vector');
 /**
  * @typedef {{
  *            path: string,
- *            sourceProjection: ol.proj.ProjectionLike,
- *            destinationProjection: ol.proj.ProjectionLike,
+ *            sourceProjection: ol.ProjectionLike,
+ *            destinationProjection: ol.ProjectionLike,
  *            styleId: number
  *           }}
  */
@@ -22,8 +22,8 @@ mapito.layer.MARKERSOptions;
 
 /**
  * @param {Object} marker
- * @param {?ol.proj.ProjectionLike} sourceProjection
- * @param {?ol.proj.ProjectionLike} destinationProjection
+ * @param {?ol.ProjectionLike} sourceProjection
+ * @param {?ol.ProjectionLike} destinationProjection
  * @return {ol.Feature}
  * @private
  */
@@ -42,8 +42,8 @@ mapito.layer.markers.readMarker_ = function(marker, sourceProjection,
 
 /**
  * @param {Array.<Object>} markers
- * @param {?ol.proj.ProjectionLike} sourceProjection
- * @param {?ol.proj.ProjectionLike} destinationProjection
+ * @param {?ol.ProjectionLike} sourceProjection
+ * @param {?ol.ProjectionLike} destinationProjection
  * @return {Array.<ol.Feature>}
  * @private
  */
@@ -60,8 +60,8 @@ mapito.layer.markers.readMarkers_ = function(markers, sourceProjection,
 
 /**
  * @param {string} path
- * @param {?ol.proj.ProjectionLike} sourceProjection
- * @param {?ol.proj.ProjectionLike} destinationProjection
+ * @param {?ol.ProjectionLike} sourceProjection
+ * @param {?ol.ProjectionLike} destinationProjection
  * @return {goog.Promise}
  * @private
  */

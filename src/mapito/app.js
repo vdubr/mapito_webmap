@@ -1,5 +1,5 @@
 goog.provide('mapito.App');
-goog.provide('mapito.App.Events');
+goog.provide('mapito.AppEvents');
 goog.provide('mapito.Event');
 goog.provide('mapito.app.Options');
 
@@ -26,6 +26,7 @@ goog.require('ol.MapEventType');
 goog.require('ol.Object');
 goog.require('ol.View');
 goog.require('ol.events');
+goog.require('ol.events.Event');
 goog.require('ol.proj.Projection');
 goog.require('ol.source.Vector');
 goog.require('ol.source.VectorEventType');
@@ -49,7 +50,7 @@ mapito.Event = function(type, event) {
   this.event = event;
 
 };
-goog.inherits(mapito.Event, ol.events.Event);
+ol.inherits(mapito.Event, ol.events.Event);
 
 
 /**
@@ -69,6 +70,7 @@ mapito.app.Options;
  * @api stable
  */
 mapito.App = function() {
+  ol.Object.call(this);
 
   this.projectOptions_ = mapito.DefaultOptions;
 
@@ -76,10 +78,9 @@ mapito.App = function() {
 
   this.target_ = document.querySelector('#mapito') || null;
 
-  goog.base(this);
 
 };
-goog.inherits(mapito.App, ol.Object);
+ol.inherits(mapito.App, ol.Object);
 
 
 /**
@@ -397,7 +398,7 @@ mapito.App.prototype.setProjectOptions_ = function(projectOptions) {
     this.projectOptions_ = projectOptions;
     resolve();
   }, this);
-  var type = mapito.App.Events.PROJECT_SET;
+  var type = mapito.AppEvents.PROJECT_SET;
   this.dispatchEvent_(type);
   return optionsSetter;
 };
@@ -830,7 +831,7 @@ mapito.App.prototype.renderMapTarget_ = function(element) {
 /**
  * @enum {string}
  */
-mapito.App.Events = {
+mapito.AppEvents = {
   /**
    * @api stable
    */

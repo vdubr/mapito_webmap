@@ -23,6 +23,7 @@
     "compile": {
       "externs": [
         "externs/bingmaps.js",
+        "externs/cartodb.js",
         "externs/closure-compiler.js",
         "externs/esrijson.js",
         "externs/geojson.js",
@@ -34,27 +35,24 @@
         "../../node_modules/react-externs/externs.js"
       ],
       "define": [
-        "goog.array.ASSUME_NATIVE_FUNCTIONS=true",
-        "goog.dom.ASSUME_STANDARDS_MODE=true",
-        "goog.json.USE_NATIVE_JSON=true",
         "goog.DEBUG=false"
       ],
       "jscomp_error": [
         "*"
       ],
       "jscomp_off": [
-        "useOfGoogBase",
-        "unnecessaryCasts",
-        "lintChecks"
+        "lintChecks",
+        "analyzerChecks"
       ],
       "extra_annotation_name": [
         "api", "observable"
       ],
       "closure_entry_point":"mapito.start",
+      "compilation_level": "ADVANCED",
       "warning_level": "VERBOSE",
       "use_types_for_optimization": true,
       "manage_closure_dependencies": true,
-      "create_source_map": "../../dist/mapito.js.map",
+      "create_source_map": "build/ol.js.map",
       "source_map_format": "V3"
     }
   }
