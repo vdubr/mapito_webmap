@@ -9,7 +9,8 @@ goog.require('ol.source.ImageStatic');
 /**
  * @typedef {{
  *            path: string,
- *            size:{ol.Size}
+ *            size: {ol.Size},
+ *            opacity: number
  *           }}
  */
 mapito.layer.LocalimageOptions;
@@ -22,7 +23,7 @@ mapito.layer.LocalimageOptions;
 mapito.layer.localimage.getLocalimageLayer = function(LocalimageOptions) {
   var path = LocalimageOptions['path'];
   var size = LocalimageOptions['size'];
-
+  var opacity = LocalimageOptions['opacity'] || 1;
 
   // Maps always need a projection, but the static image is not geo-referenced,
   // and are only measured in pixels.  So, we create a fake projection that the
@@ -35,6 +36,7 @@ mapito.layer.localimage.getLocalimageLayer = function(LocalimageOptions) {
 
 
   var layer = new ol.layer.Image({
+    opacity: opacity,
     source: new ol.source.ImageStatic({
       url: path,
       projection: pixelProjection,

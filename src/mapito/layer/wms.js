@@ -13,7 +13,8 @@ goog.require('ol.source.TileWMS');
  *            version: string,
  *            layers: string,
  *            tiled: boolean,
- *            extent: (ol.Extent|undefined)
+ *            extent: (ol.Extent|undefined),
+ *            opacity: number
  *           }}
  */
 mapito.layer.WMSOptions;
@@ -25,12 +26,14 @@ mapito.layer.WMSOptions;
  * @api stable
  */
 mapito.layer.wms.getWMSLayer = function(WMSOptions) {
+  //TODO if tiled false get non tiled
   var url = WMSOptions['url'];
   var version = WMSOptions['version'] || '1.1.1';
   var layers = WMSOptions['layers'];
   var tiled = WMSOptions['tiled'];
   var extent = WMSOptions['extent'];
   var projection = WMSOptions['projection'];
+  var opacity = WMSOptions['opacity'] || 1;
 
   var source_options = {
     url: url,
@@ -47,6 +50,7 @@ mapito.layer.wms.getWMSLayer = function(WMSOptions) {
   var source = new ol.source.TileWMS(source_options);
 
   var layer = new ol.layer.Tile({
+    opacity: opacity,
     source: source
   });
   return layer;

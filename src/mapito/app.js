@@ -562,9 +562,11 @@ mapito.App.prototype.getProjection_ = function(projOptions) {
  */
 mapito.App.prototype.setMap_ = function(mapOptions, projection) {
   var mapTarget = this.target_.querySelector('.mapito-mapview');
-
-  var resolutions = this.getResolutions_(
-      mapOptions['baseResolution'], mapOptions['resolutionsLevels']);
+  var resolutions = undefined;
+  if (mapOptions['baseResolution'] && mapOptions['resolutionsLevels']) {
+    resolutions = this.getResolutions_(
+        mapOptions['baseResolution'], mapOptions['resolutionsLevels']);
+  }
 
   var zoom, center, zoomExtent;
   if (mapOptions['init']) {

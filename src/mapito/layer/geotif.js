@@ -10,7 +10,8 @@ goog.require('ol.source.ImageStatic');
  *            url: string,
  *            projection:ol.ProjectionLike,
  *            extent:ol.Extent,
- *            imageSize:ol.Size
+ *            imageSize:ol.Size,
+ *            opacity:number
  *           }}
  */
 mapito.layer.GeotifOptions;
@@ -25,15 +26,18 @@ mapito.layer.geotif.getGeotifLayer = function(GeotifOptions) {
   var projection = GeotifOptions['projection'];
   var extent = GeotifOptions['extent'];
   var imageSize = GeotifOptions['imageSize'];
+  var opacity = GeotifOptions['opacity'] || 1;
 
-  var layer = new ol.layer.Image({
-    source: new ol.source.ImageStatic({
-      projection: projection,
-      url: url,
-      imageExtent: extent,
-      imageSize: imageSize
-    })
-  });
+  var layer = new ol.layer.Image(
+      {
+        opacity: opacity,
+        source: new ol.source.ImageStatic({
+          projection: projection,
+          url: url,
+          imageExtent: extent,
+          imageSize: imageSize
+        })
+      });
 
   return layer;
 };

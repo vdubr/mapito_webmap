@@ -8,7 +8,8 @@ goog.require('ol.source.XYZ');
 /**
  * @typedef {{
  *            url: string,
- *            projection:string
+ *            projection:string,
+ *            opacity: number
  *           }}
  */
 mapito.layer.TiledOptions;
@@ -21,8 +22,10 @@ mapito.layer.TiledOptions;
 mapito.layer.tiled.getTiledLayer = function(TiledOptions) {
   var url = TiledOptions['url'];
   var projection = TiledOptions['projection'];
+  var opacity = TiledOptions['opacity'] || 1;
 
   var layer = new ol.layer.Tile({
+    opacity: opacity,
     source: new ol.source.XYZ({
       projection: projection,
       url: url + '/{z}/{x}/{-y}.png'

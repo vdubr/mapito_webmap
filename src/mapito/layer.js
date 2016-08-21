@@ -50,7 +50,6 @@ mapito.layer.LayerOptions;
  *            title: (string|undefined),
  *            baselayer: (boolean|undefined),
  *            visible: (boolean|undefined),
- *            alpha: (number|undefined),
  *            reload: (number|undefined),
  *            tags: (Array.<string>|undefined),
  *            events: (Array.<mapito.layer.Events>|undefined),
@@ -68,7 +67,6 @@ mapito.layer.ConfigEnum = {
   TITILE: 'title',
   BASELAYER: 'baselayer',
   VISIBLE: 'visible',
-  ALPHA: 'alpha',
   RELOAD: 'reload',
   TAGS: 'tags',
   EVENTED: 'events',
@@ -185,21 +183,9 @@ mapito.layer.getLayerConfig = function(layer) {
  */
 mapito.layer.setValues = function(layer) {
 
-  if (layer.get('alfa')) {
-    mapito.layer.setAlfa(layer);
-  }
-
   if (layer.get('reload')) {
     mapito.layer.setReload(layer);
   }
-};
-
-
-/**
- * @param {ol.layer.Layer} layer
- */
-mapito.layer.setAlfa = function(layer) {
-  window['console']['log']('setAlfa');
 };
 
 
@@ -230,10 +216,6 @@ mapito.layer.getDefaultValues = function(layerConfig) {
       layerConfig['visible']) ?
       layerConfig['visible'] : true;
 
-  var alpha = goog.isDef(
-      layerConfig['alpha']) ?
-      layerConfig['alpha'] : undefined;
-
   var reload = goog.isDef(
       layerConfig['reload']) ?
       layerConfig['reload'] : undefined;
@@ -257,7 +239,6 @@ mapito.layer.getDefaultValues = function(layerConfig) {
     title: title,
     baselayer: baselayer,
     visible: visible,
-    alpha: alpha,
     reload: reload,
     tags: tags,
     'events': events,
